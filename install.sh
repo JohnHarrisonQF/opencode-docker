@@ -67,9 +67,9 @@ else
 fi
 
 if ! command -v opencode &> /dev/null; then
-    if [ -t 0 ]; then
+    if [ -e /dev/tty ]; then
         echo ""
-        read -p "Opencode is not installed. Would you like to install it now? [Y/n]: " INSTALL_OPENCODE
+        read -p "Opencode is not installed. Would you like to install it now? [Y/n]: " INSTALL_OPENCODE < /dev/tty
         INSTALL_OPENCODE="${INSTALL_OPENCODE:-Y}"
     else
         INSTALL_OPENCODE="Y"
@@ -91,6 +91,7 @@ echo "Add this alias to your ~/.zshrc or ~/.bashrc:"
 echo "  alias opencode-docker='$INSTALL_DIR/run.sh'"
 echo ""
 echo "Then reload your shell and run from any project:"
+echo "  source ~/.zshrc or ~/.bashrc"
 echo "  cd /path/to/your-project"
 echo "  opencode-docker"
 echo ""
