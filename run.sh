@@ -1,19 +1,5 @@
 #!/bin/bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-IMAGE="opencode-docker"
-FORCE_BUILD=false
-
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --build|-B)
-      FORCE_BUILD=true
-      shift
-      ;;
-    *)
-      break
-      ;;
-  esac
-done
 
 if [ -n "$NO_COLOR" ] || [ "$TERM" = "dumb" ]; then
     RED=""
@@ -27,113 +13,70 @@ else
     RESET='\033[0m'
 fi
 
-ENV_FILE="$SCRIPT_DIR/.env"
-if [ -f "$ENV_FILE" ]; then
-  set -a
-  source "$ENV_FILE"
-  set +a
-fi
-
-THEME="${THEME:-default}"
-ENABLE_INTELLIJ="${ENABLE_INTELLIJ:-true}"
-ENABLE_CONTEXT7="${ENABLE_CONTEXT7:-true}"
-ENABLE_SHOPIFY_DEV="${ENABLE_SHOPIFY_DEV:-true}"
-ENABLE_DDG_SEARCH="${ENABLE_DDG_SEARCH:-true}"
-ENABLE_FIGMA="${ENABLE_FIGMA:-true}"
-ENABLE_FIGMA_DESKTOP="${ENABLE_FIGMA_DESKTOP:-true}"
-ENABLE_SEQUENTIAL_THINKING="${ENABLE_SEQUENTIAL_THINKING:-true}"
-ENABLE_GSD="${ENABLE_GSD:-true}"
-
-BUILD_ARGS=(
-  --build-arg "ENABLE_INTELLIJ=$ENABLE_INTELLIJ"
-  --build-arg "ENABLE_CONTEXT7=$ENABLE_CONTEXT7"
-  --build-arg "ENABLE_SHOPIFY_DEV=$ENABLE_SHOPIFY_DEV"
-  --build-arg "ENABLE_DDG_SEARCH=$ENABLE_DDG_SEARCH"
-  --build-arg "ENABLE_FIGMA=$ENABLE_FIGMA"
-  --build-arg "ENABLE_FIGMA_DESKTOP=$ENABLE_FIGMA_DESKTOP"
-  --build-arg "ENABLE_SEQUENTIAL_THINKING=$ENABLE_SEQUENTIAL_THINKING"
-  --build-arg "ENABLE_GSD=$ENABLE_GSD"
-)
-
-if [ -n "$OLLAMA_PROVIDER_NAME" ]; then
-  BUILD_ARGS+=(--build-arg "OLLAMA_PROVIDER_NAME=$OLLAMA_PROVIDER_NAME")
-fi
-if [ -n "$OLLAMA_PROVIDER_PRETTY_NAME" ]; then
-  BUILD_ARGS+=(--build-arg "OLLAMA_PROVIDER_PRETTY_NAME=$OLLAMA_PROVIDER_PRETTY_NAME")
-fi
-if [ -n "$OLLAMA_HOST" ]; then
-  BUILD_ARGS+=(--build-arg "OLLAMA_HOST=$OLLAMA_HOST")
-fi
-if [ -n "$OLLAMA_MODELS" ]; then
-  BUILD_ARGS+=(--build-arg "OLLAMA_MODELS=$OLLAMA_MODELS")
-fi
-
-if [ -n "$THEME" ] && [ "$THEME" != "default" ]; then
-  BUILD_ARGS+=(--build-arg "THEME=$THEME")
-fi
-
-if [ -n "$PHP_VERSION" ]; then
-  BUILD_ARGS+=(--build-arg "PHP_VERSION=$PHP_VERSION")
-fi
-
-IMAGE_EXISTS=false
-if docker image inspect "$IMAGE" > /dev/null 2>&1; then
-  IMAGE_EXISTS=true
-fi
-
-if [ "$FORCE_BUILD" = true ] || [ "$IMAGE_EXISTS" = false ]; then
-  echo -e "${GREEN}Building Docker image: $IMAGE${RESET}"
-  docker buildx build -f "$SCRIPT_DIR/Dockerfile" "${BUILD_ARGS[@]}" -t "$IMAGE" --load "$SCRIPT_DIR"
-else
-  echo -e "${GREEN}Using existing image: $IMAGE${RESET}"
-  echo -e "${YELLOW}Use --build or -B to force rebuild${RESET}"
-fi
-
-DOCKER_ARGS=(
-  -it --rm
-  -v "$(pwd)":/workspace
-  --add-host host.docker.internal:host-gateway
-)
-
-configure_clipboard() {
-  local os_type
-  os_type="$(uname -s)"
-  
-  case "$os_type" in
-    Linux)
-      if [ -n "$WAYLAND_DISPLAY" ] && [ -n "$XDG_RUNTIME_DIR" ]; then
-        DOCKER_ARGS+=(-e "WAYLAND_DISPLAY=$WAYLAND_DISPLAY")
-        DOCKER_ARGS+=(-e "XDG_RUNTIME_DIR=/tmp/xdg-runtime")
-        DOCKER_ARGS+=(-v "$XDG_RUNTIME_DIR:/tmp/xdg-runtime")
-      elif [ -n "$DISPLAY" ]; then
-        DOCKER_ARGS+=(-e "DISPLAY=$DISPLAY")
-        if [ -d "/tmp/.X11-unix" ]; then
-          DOCKER_ARGS+=(-v "/tmp/.X11-unix:/tmp/.X11-unix")
-        fi
-      fi
-      ;;
-    Darwin)
-      if [ -n "$DISPLAY" ]; then
-        DOCKER_ARGS+=(-e "DISPLAY=$DISPLAY")
-        if [ -d "/tmp/.X11-unix" ]; then
-          DOCKER_ARGS+=(-v "/tmp/.X11-unix:/tmp/.X11-unix")
-        fi
-      fi
-      ;;
-    MINGW*|MSYS*|CYGWIN*)
-      if [ -n "$DISPLAY" ]; then
-        DOCKER_ARGS+=(-e "DISPLAY=$DISPLAY")
-      fi
-      ;;
-  esac
+show_help() {
+    echo "Usage: $(basename "$0") [OPTIONS] [-- opencode args]"
+    echo ""
+    echo "Options:"
+    echo "  -B, --build        Force rebuild the Docker image"
+    echo "  -h, --help         Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $(basename "$0")              Run opencode"
+    echo "  $(basename "$0") --build      Rebuild and run"
+    echo "  $(basename "$0") -- -h        Pass -h flag to opencode"
+    exit 0
 }
 
-configure_clipboard
+FORCE_BUILD=false
+OPENCODE_ARGS=()
 
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --build|-B)
+            FORCE_BUILD=true
+            shift
+            ;;
+        --help|-h)
+            show_help
+            ;;
+        --)
+            shift
+            OPENCODE_ARGS=("$@")
+            break
+            ;;
+        *)
+            OPENCODE_ARGS=("$@")
+            break
+            ;;
+    esac
+done
+
+cd "$SCRIPT_DIR" || exit
+
+ENV_FILE="$SCRIPT_DIR/.env"
 if [ -f "$ENV_FILE" ]; then
-  DOCKER_ARGS+=(--env-file "$ENV_FILE")
-  echo -e "${GREEN}Using environment file: $ENV_FILE${RESET}"
+    set -a
+    source "$ENV_FILE"
+    set +a
+fi
+
+ENABLE_INTELLIJ="${ENABLE_INTELLIJ:-true}"
+ENABLE_FIGMA_DESKTOP="${ENABLE_FIGMA_DESKTOP:-true}"
+
+if [ "$ENABLE_INTELLIJ" = "true" ] || [ "$ENABLE_FIGMA_DESKTOP" = "true" ]; then
+    export NETWORK_MODE=host
+    echo -e "${YELLOW}Network mode: host (required for IntelliJ/Figma Desktop MCP)${RESET}"
+fi
+
+if [ "$FORCE_BUILD" = true ]; then
+    echo -e "${GREEN}Building Docker image...${RESET}"
+    docker compose build --no-cache
+fi
+
+if ! docker image inspect opencode-docker > /dev/null 2>&1; then
+    echo -e "${GREEN}Building Docker image (first run)...${RESET}"
+    docker compose build
 fi
 
 echo -e "${GREEN}Starting container...${RESET}"
-exec docker run "${DOCKER_ARGS[@]}" $IMAGE "$@"
+docker compose run --rm opencode "${OPENCODE_ARGS[@]}"

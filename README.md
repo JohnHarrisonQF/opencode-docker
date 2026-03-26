@@ -9,6 +9,7 @@ This project is not affiliated with, endorsed by, or connected to the OpenCode t
 ## Prerequisites
 
 - Docker (required)
+- Docker Compose (required)
 - Git (for installation)
 - OpenCode (optional – the installer can install it for you)
 
@@ -101,17 +102,19 @@ nano .env  # or use your preferred editor
 
 #### MCP Server Configuration
 
-| Variable               | Description                                           | Default |
-|------------------------|-------------------------------------------------------|---------|
-| `ENABLE_INTELLIJ`      | Enable IntelliJ MCP server                            | `false` |
-| `ENABLE_CONTEXT7`      | Enable Context7 MCP server                            | `false` |
-| `ENABLE_SHOPIFY_DEV`   | Enable Shopify Dev MCP server                         | `false` |
-| `ENABLE_DDG_SEARCH`    | Enable DuckDuckGo Search MCP server                   | `false` |
-| `ENABLE_FIGMA`         | Enable Figma MCP server                               | `false` |
-| `ENABLE_FIGMA_DESKTOP` | Enable Figma Desktop MCP server                       | `false` |
-| `CONTEXT7_API_KEY`     | Context7 API key for authenticated access             | (empty) |
-| `FIGMA_CLIENT_ID`      | Figma OAuth client ID (required if Figma enabled)     | (empty) |
-| `FIGMA_CLIENT_SECRET`  | Figma OAuth client secret (required if Figma enabled) | (empty) |
+| Variable                   | Description                                           | Default |
+|----------------------------|-------------------------------------------------------|---------|
+| `ENABLE_INTELLIJ`          | Enable IntelliJ MCP server                            | `false` |
+| `ENABLE_CONTEXT7`          | Enable Context7 MCP server                            | `false` |
+| `ENABLE_SHOPIFY_DEV`       | Enable Shopify Dev MCP server                         | `false` |
+| `ENABLE_DDG_SEARCH`        | Enable DuckDuckGo Search MCP server                   | `false` |
+| `ENABLE_FIGMA`             | Enable Figma MCP server                               | `false` |
+| `ENABLE_FIGMA_DESKTOP`     | Enable Figma Desktop MCP server                       | `false` |
+| `ENABLE_SEQUENTIAL_THINKING` | Enable Sequential Thinking MCP server              | `false` |
+| `ENABLE_GSD`               | Enable GSD (GSD-OpenCode) MCP server                  | `false` |
+| `CONTEXT7_API_KEY`         | Context7 API key for authenticated access             | (empty) |
+| `FIGMA_CLIENT_ID`          | Figma OAuth client ID (required if Figma enabled)     | (empty) |
+| `FIGMA_CLIENT_SECRET`      | Figma OAuth client secret (required if Figma enabled) | (empty) |
 
 #### Colour Settings
 
@@ -154,6 +157,28 @@ The current directory is mounted as `/workspace` inside the container. OpenCode 
 ```bash
 opencode-docker --build
 ```
+
+**Show help:**
+```bash
+opencode-docker --help
+```
+
+**Pass arguments to opencode:**
+```bash
+opencode-docker -- --model ollama-cloud/glm-5:cloud
+```
+
+## Security Considerations
+
+**Network Isolation:**
+- By default, the container uses bridge networking for isolation
+- When `ENABLE_INTELLIJ=true` or `ENABLE_FIGMA_DESKTOP=true`, `network_mode: host` is automatically enabled
+- Host networking is required for MCP servers that bind to `localhost` on your machine
+- For local development workstations, this is typically acceptable
+
+**File System Isolation:**
+- Only the current working directory is mounted to `/workspace`
+- API keys and secrets are passed via environment variables
 
 ## Troubleshooting
 

@@ -38,6 +38,10 @@ if ! command -v docker &> /dev/null; then
     error "Docker is required but not installed. Please install Docker first."
 fi
 
+if ! docker compose version &> /dev/null; then
+    error "Docker Compose is required but not installed. Please install Docker Compose first."
+fi
+
 DEFAULT_INSTALL_DIR="$HOME/opencode-docker"
 if [ -e /dev/tty ]; then
     read -p "Where would you like to install opencode-docker? [$DEFAULT_INSTALL_DIR]: " INPUT_DIR < /dev/tty
@@ -63,24 +67,6 @@ else
     if [ -f ".env.example" ]; then
         cp .env.example .env
         info "Created .env file from .env.example"
-    fi
-fi
-
-if ! command -v opencode &> /dev/null; then
-    if [ -e /dev/tty ]; then
-        echo ""
-        read -p "Opencode is not installed. Would you like to install it now? [Y/n]: " INSTALL_OPENCODE < /dev/tty
-        INSTALL_OPENCODE="${INSTALL_OPENCODE:-Y}"
-    else
-        INSTALL_OPENCODE="Y"
-    fi
-    
-    if [[ "$INSTALL_OPENCODE" =~ ^[Yy]$ ]]; then
-        info "Installing opencode..."
-        curl -fsSL https://opencode.ai/install | bash
-    else
-        warn "Opencode was not installed."
-        echo "Please install opencode manually: https://opencode.ai/docs#install"
     fi
 fi
 
