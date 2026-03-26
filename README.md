@@ -8,8 +8,8 @@ This project is not affiliated with, endorsed by, or connected to the OpenCode t
 
 ## Prerequisites
 
-- Docker (required)
-- Docker Compose (required)
+- Docker or Podman (required)
+- Docker Compose or podman-compose (required)
 - Git (for installation)
 - OpenCode (optional – the installer can install it for you)
 
@@ -166,6 +166,20 @@ opencode-docker --help
 **Pass arguments to opencode:**
 ```bash
 opencode-docker -- --model ollama-cloud/glm-5:cloud
+```
+
+### Podman Support
+
+Podman is supported automatically. The script detects which runtime is available:
+
+1. `docker compose` (if Docker is installed)
+2. `podman compose` (if Podman with compose plugin is installed)
+3. `podman-compose` (standalone podman-compose)
+
+You can override detection by setting `CONTAINER_RUNTIME`:
+```bash
+export CONTAINER_RUNTIME=podman
+opencode-docker
 ```
 
 ## Security Considerations

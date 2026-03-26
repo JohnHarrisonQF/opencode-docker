@@ -13,6 +13,24 @@ else
     RESET='\033[0m'
 fi
 
+detect_container_runtime() {
+    if [ -n "$CONTAINER_RUNTIME" ]; then
+        COMPOSE_CMD="$CONTAINER_RUNTIME compose"
+        return
+    fi
+    
+    if command -v docker &> /dev/null && docker compose version &> /dev/null; then
+        COMPOSE_CMD="docker compose"
+    elif command -v podman &> /dev/null && podman compose version &> /dev/null 2>&1; then
+        COMPOSE_CMD="podman compose"
+    elif command -v podman-compose &> /dev/null; then
+        COMPOSE_CMD="podman-compose"
+    else
+        echo -e "${RED}ERROR: No container runtime found. Install Docker or Podman.${RESET}" >&2
+        exit 1
+    fi
+}
+
 show_help() {
     echo "Usage: $(basename "$0") [OPTIONS] [-- opencode args]"
     echo ""
@@ -53,6 +71,8 @@ done
 
 cd "$SCRIPT_DIR" || exit
 
+detect_container_runtime
+
 ENV_FILE="$SCRIPT_DIR/.env"
 if [ -f "$ENV_FILE" ]; then
     set -a
@@ -69,14 +89,14 @@ if [ "$ENABLE_INTELLIJ" = "true" ] || [ "$ENABLE_FIGMA_DESKTOP" = "true" ]; then
 fi
 
 if [ "$FORCE_BUILD" = true ]; then
-    echo -e "${GREEN}Building Docker image...${RESET}"
-    docker compose build --no-cache
+    echo -e "${GREEN}Building image with $COMPOSE_CMD...${RESET}"
+    $COMPOSE_CMD build --no-cache
 fi
 
-if ! docker image inspect opencode-docker > /dev/null 2>&1; then
-    echo -e "${GREEN}Building Docker image (first run)...${RESET}"
-    docker compose build
+if ! $COMPOSE_CMD image inspect opencode-docker > /dev/null 2>&1; then
+    echo -e "${GREEN}Building image (first run)...${RESET}"
+    $COMPOSE_CMD build
 fi
 
 echo -e "${GREEN}Starting container...${RESET}"
-docker compose run --rm opencode "${OPENCODE_ARGS[@]}"
+$COMPOSE_CMD run --rm opencode "${OPENCODE_ARGS[@]}"
