@@ -1,6 +1,10 @@
 #!/bin/sh
 AUTH_DIR="/root/.local/share/opencode"
 
+if [ -n "$NO_COLOR" ]; then
+  export TERM=dumb
+fi
+
 create_auth_json() {
   mkdir -p "$AUTH_DIR"
   
@@ -28,7 +32,7 @@ set_git_credentials() {
     git config --global user.name "$GIT_NAME"
   fi
 
-  if  && [ -n "$GIT_EMAIL" ]; then
+  if [ -n "$GIT_EMAIL" ]; then
     git config --global user.email "$GIT_EMAIL"
   fi
 }

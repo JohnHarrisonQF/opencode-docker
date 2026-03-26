@@ -2,6 +2,18 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IMAGE="opencode-sandbox"
 
+if [ -n "$NO_COLOR" ] || [ "$TERM" = "dumb" ]; then
+    RED=""
+    GREEN=""
+    YELLOW=""
+    RESET=""
+else
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[0;33m'
+    RESET='\033[0m'
+fi
+
 ENV_FILE="$SCRIPT_DIR/.env"
 if [ -f "$ENV_FILE" ]; then
   set -a
@@ -18,7 +30,7 @@ if [ -n "$THEME" ] && [ "$THEME" != "default" ]; then
   IMAGE="${IMAGE}-${THEME}"
 fi
 
-echo -e "\033[0;32mBuilding Docker image: $IMAGE\033[0m"
+echo -e "${GREEN}Building Docker image: $IMAGE${RESET}"
 docker build -f "$SCRIPT_DIR/Dockerfile" $BUILD_ARGS -t $IMAGE "$SCRIPT_DIR"
 
 DOCKER_ARGS=(
@@ -30,8 +42,8 @@ DOCKER_ARGS=(
 
 if [ -f "$ENV_FILE" ]; then
   DOCKER_ARGS+=(--env-file "$ENV_FILE")
-  echo -e "\033[0;32mUsing environment file: $ENV_FILE\033[0m"
+  echo -e "${GREEN}Using environment file: $ENV_FILE${RESET}"
 fi
 
-echo -e "\033[0;32mStarting container...\033[0m"
+echo -e "${GREEN}Starting container...${RESET}"
 exec docker run "${DOCKER_ARGS[@]}" $IMAGE "$@"
