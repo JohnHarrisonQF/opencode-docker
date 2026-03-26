@@ -79,7 +79,6 @@ nano .env  # or use your preferred editor
 | `OLLAMA_PROVIDER_PRETTY_NAME` | Display name (e.g. "Ollama")                                          | No (required if using custom Ollama) |
 | `OLLAMA_HOST`                 | Ollama server URL (e.g. "http://localhost:11434")                     | No (required if using custom Ollama) |
 | `OLLAMA_MODELS`               | Comma-separated list of models (first model gets `_launch: true`)     | No                                   |
-| `OLLAMA_MODEL`                | Default model to use (currently defaults to `ollama-cloud/glm-5:cloud`) | No                                   |
 
 #### Git Setup
 
@@ -87,6 +86,12 @@ nano .env  # or use your preferred editor
 |-------------|----------------------------|----------|
 | `GIT_NAME`  | Your name for Git commits  | No       |
 | `GIT_EMAIL` | Your email for Git commits | No       |
+
+#### Container Settings
+
+| Variable      | Description                                                                                                   | Required |
+|---------------|---------------------------------------------------------------------------------------------------------------|----------|
+| `PHP_VERSION` | PHP version to install in the container (format: `XY`, e.g. `84` for PHP 8.4). Leave blank to not install PHP | No       |
 
 #### Theme Settings
 
@@ -96,13 +101,17 @@ nano .env  # or use your preferred editor
 
 #### MCP Server Configuration
 
-| Variable             | Description                               | Default |
-|----------------------|-------------------------------------------|---------|
-| `INCLUDE_INTELLIJ`   | Include IntelliJ MCP server configuration | `true`  |
-| `ENABLE_CONTEXT7`    | Enable Context7 MCP server                | `true`  |
-| `ENABLE_SHOPIFY_DEV` | Enable Shopify Dev MCP server             | `true`  |
-| `ENABLE_DDG_SEARCH`  | Enable DuckDuckGo Search MCP server       | `true`  |
-| `CONTEXT7_API_KEY`   | Context7 API key for authenticated access | (empty) |
+| Variable               | Description                                           | Default |
+|------------------------|-------------------------------------------------------|---------|
+| `ENABLE_INTELLIJ`      | Enable IntelliJ MCP server                            | `false` |
+| `ENABLE_CONTEXT7`      | Enable Context7 MCP server                            | `false` |
+| `ENABLE_SHOPIFY_DEV`   | Enable Shopify Dev MCP server                         | `false` |
+| `ENABLE_DDG_SEARCH`    | Enable DuckDuckGo Search MCP server                   | `false` |
+| `ENABLE_FIGMA`         | Enable Figma MCP server                               | `false` |
+| `ENABLE_FIGMA_DESKTOP` | Enable Figma Desktop MCP server                       | `false` |
+| `CONTEXT7_API_KEY`     | Context7 API key for authenticated access             | (empty) |
+| `FIGMA_CLIENT_ID`      | Figma OAuth client ID (required if Figma enabled)     | (empty) |
+| `FIGMA_CLIENT_SECRET`  | Figma OAuth client secret (required if Figma enabled) | (empty) |
 
 #### Colour Settings
 

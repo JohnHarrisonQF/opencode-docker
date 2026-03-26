@@ -1,6 +1,6 @@
 FROM ghcr.io/anomalyco/opencode:latest
 
-ARG INCLUDE_INTELLIJ=true
+ARG ENABLE_INTELLIJ=true
 ARG ENABLE_CONTEXT7=true
 ARG ENABLE_SHOPIFY_DEV=true
 ARG ENABLE_DDG_SEARCH=true
@@ -12,8 +12,21 @@ ARG OLLAMA_PROVIDER_PRETTY_NAME
 ARG OLLAMA_HOST
 ARG OLLAMA_MODELS
 ARG NPM_PACKAGES
+ARG PHP_VERSION
+ARG APK_PACKAGES="nodejs npm curl jq git"
+ARG REQUIRES_PYTHON=false
 
-RUN apk add --no-cache nodejs npm curl jq python3 py3-pip php php-dom php-xml php-xmlwriter php-tokenizer php-pdo composer git
+RUN if [ -n "$ENABLE_DDG_SEARCH" ]; then \
+      REQUIRES_PYTHON=true; \
+    fi
+
+RUN if [ -n "$PHP_VERSION" ]; then \
+        APK_PACKAGES="$APK_PACKAGES php${PHP_VERSION} php${PHP_VERSION}-dom php${PHP_VERSION}-xml php${PHP_VERSION}-xmlwriter php${PHP_VERSION}-tokenizer php${PHP_VERSION}-pdo php${PHP_VERSION}-pdo_mysql composer"; \
+    fi && \
+    if [ "$REQUIRES_PYTHON" = "true" ]; then \
+        APK_PACKAGES="$APK_PACKAGES python3 py3-pip"; \
+    fi && \
+    apk add --no-cache $APK_PACKAGES
 
 RUN npm install -g @upstash/context7-mcp @shopify/dev-mcp @ai-sdk/openai-compatible gsd-opencode
 
@@ -30,7 +43,9 @@ RUN if [ "$ENABLE_CONTEXT7" = "true" ]; then \
         npm install -g $NPM_PACKAGES; \
     fi
 
-RUN pip install --break-system-packages uv
+RUN if [ -n "$ENABLE_DDG_SEARCH" ]; then \
+      pip install --break-system-packages uv \
+    fi
 
 RUN mkdir -p /root/.config/opencode/themes
 
@@ -66,7 +81,7 @@ RUN if [ "$ENABLE_FIGMA_DESKTOP" = "true" ]; then \
         mv /tmp/opencode.json /root/.config/opencode/opencode.json; \
     fi
 
-RUN if [ "$INCLUDE_INTELLIJ" = "true" ]; then \
+RUN if [ "$ENABLE_INTELLIJ" = "true" ]; then \
         jq '.mcp.IntelliJ = {"type": "remote", "url": "http://localhost:64342/sse"} | .mcp = (.mcp | to_entries | sort_by(.key == "IntelliJ" | not) | from_entries)' \
           /root/.config/opencode/opencode.json > /tmp/opencode.json && \
         mv /tmp/opencode.json /root/.config/opencode/opencode.json; \
