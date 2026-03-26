@@ -4,15 +4,31 @@ ARG INCLUDE_INTELLIJ=true
 ARG ENABLE_CONTEXT7=true
 ARG ENABLE_SHOPIFY_DEV=true
 ARG ENABLE_DDG_SEARCH=true
+ARG ENABLE_FIGMA=true
+ARG ENABLE_FIGMA_DESKTOP=true
 ARG THEME=default
 ARG OLLAMA_PROVIDER_NAME
 ARG OLLAMA_PROVIDER_PRETTY_NAME
 ARG OLLAMA_HOST
 ARG OLLAMA_MODELS
+ARG NPM_PACKAGES
 
-RUN apk add --no-cache nodejs npm curl jq python3 py3-pip php composer git
+RUN apk add --no-cache nodejs npm curl jq python3 py3-pip php php-dom php-xml php-xmlwriter php-tokenizer php-pdo composer git
 
 RUN npm install -g @upstash/context7-mcp @shopify/dev-mcp @ai-sdk/openai-compatible gsd-opencode
+
+RUN if [ "$ENABLE_CONTEXT7" = "true" ]; then \
+        NPM_PACKAGES="$NPM_PACKAGES @upstash/context7-mcp"; \
+    fi && \
+    if [ "$ENABLE_SHOPIFY_DEV" = "true" ]; then \
+        NPM_PACKAGES="$NPM_PACKAGES @shopify/dev-mcp"; \
+    fi && \
+    if [ "$ENABLE_DDG_SEARCH" = "true" ]; then \
+        NPM_PACKAGES="$NPM_PACKAGES duckduckgo-mcp-server"; \
+    fi && \
+    if [ -n "$NPM_PACKAGES" ]; then \
+        npm install -g $NPM_PACKAGES; \
+    fi
 
 RUN pip install --break-system-packages uv
 
@@ -34,6 +50,18 @@ RUN if [ "$ENABLE_SHOPIFY_DEV" = "true" ]; then \
 
 RUN if [ "$ENABLE_DDG_SEARCH" = "true" ]; then \
         jq '.mcp["ddg-search"] = {"command":["uvx","duckduckgo-mcp-server"],"environment":{"DDG_SAFE_SEARCH":"MODERATE","DDG_REGION":"gb-en"},"type":"local","enabled":true}' \
+            /root/.config/opencode/opencode.json > /tmp/opencode.json && \
+        mv /tmp/opencode.json /root/.config/opencode/opencode.json; \
+    fi
+
+RUN if [ "$ENABLE_FIGMA" = "true" ]; then \
+        jq '.mcp["figma"] = {"url": "https://mcp.figma.com/mcp","type":"remote","enabled":true}' \
+            /root/.config/opencode/opencode.json > /tmp/opencode.json && \
+        mv /tmp/opencode.json /root/.config/opencode/opencode.json; \
+    fi
+
+RUN if [ "$ENABLE_FIGMA_DESKTOP" = "true" ]; then \
+        jq '.mcp["figma-desktop"] = {"url": "http://127.0.0.1:3845/mcp","type":"remote","enabled":true}' \
             /root/.config/opencode/opencode.json > /tmp/opencode.json && \
         mv /tmp/opencode.json /root/.config/opencode/opencode.json; \
     fi
@@ -81,5 +109,7 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 RUN gsd-opencode install --global
+
+WORKDIR /workspace
 
 ENTRYPOINT ["/entrypoint.sh"]

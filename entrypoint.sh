@@ -48,9 +48,25 @@ configure_mcp_servers() {
       mv /tmp/opencode.json "$CONFIG_FILE"
     fi
   fi
+  
+  if [ -n "$FIGMA_CLIENT_ID" ] && [ -n "$FIGMA_CLIENT_SECRET" ] && [ -f "$CONFIG_FILE" ]; then
+    if jq -e '.mcp.figma' "$CONFIG_FILE" > /dev/null 2>&1; then
+      jq --arg cid "$FIGMA_CLIENT_ID" --arg cs "$FIGMA_CLIENT_SECRET" \
+        '.mcp.figma.oauth = {"client_id": $cid, "client_secret": $cs}' \
+        "$CONFIG_FILE" > /tmp/opencode.json && \
+      mv /tmp/opencode.json "$CONFIG_FILE"
+    fi
+    if jq -e '.mcp["figma-desktop"]' "$CONFIG_FILE" > /dev/null 2>&1; then
+      jq --arg cid "$FIGMA_CLIENT_ID" --arg cs "$FIGMA_CLIENT_SECRET" \
+        '.mcp["figma-desktop"].oauth = {"client_id": $cid, "client_secret": $cs}' \
+        "$CONFIG_FILE" > /tmp/opencode.json && \
+      mv /tmp/opencode.json "$CONFIG_FILE"
+    fi
+  fi
 }
 
 set_git_credentials
 create_auth_json
 configure_mcp_servers
+cd /workspace || exit
 exec opencode "$@"
