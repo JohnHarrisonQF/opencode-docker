@@ -85,9 +85,9 @@ Copy `.env.example` to `.env` and configure the following variables:
 
 #### Theme Settings
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `THEME` | UI theme ("default" or "dracula") | `default` |
+| Variable | Description                                | Default |
+|----------|--------------------------------------------|---------|
+| `THEME` | UI theme (any built in theme or "dracula") | `default` |
 
 #### MCP Server Configuration
 
@@ -101,7 +101,7 @@ Copy `.env.example` to `.env` and configure the following variables:
 
 ### Custom Themes
 
-If `THEME` is set to a value other than "default" or "dracula", the theme name will be set directly in the configuration. You can manually add theme files to `/root/.config/opencode/themes/` inside the container if needed.
+If `THEME` is set to a value that is not one of the built in Opencode themes or "dracula" you will need to provide the cutom theme.
 
 ## Usage
 
@@ -115,59 +115,41 @@ docker run -it --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
   --network host \
   --env-file /path/to/opencode-docker/.env \
-  opencode-sandbox
+  opencode-docker
 ```
 
 **Note:** The container mounts the Docker socket and uses host networking to allow OpenCode to interact with Docker containers on your system.
 
-### Platform-Specific Aliases
+### Using run.sh
 
-**Recommended:** Create an alias pointing to the `run.sh` script (simpler and always up-to-date):
-
-```bash
-# Add to your shell config (~/.zshrc, ~/.bashrc, or ~/.bash_profile)
-alias opencode='/path/to/opencode-docker/run.sh'
-```
-
-**Or use a direct Docker alias:**
-
-**macOS (zsh) - add to `~/.zshrc` or `~/.bash_profile`:**
-```bash
-alias opencode='docker run -it --rm -v "$(pwd):/workspace" -v /var/run/docker.sock:/var/run/docker.sock --network host --env-file /path/to/opencode-docker/.env opencode-sandbox'
-```
-
-**Linux (bash) - add to `~/.bashrc`:**
-```bash
-alias opencode='docker run -it --rm -v "$(pwd):/workspace" -v /var/run/docker.sock:/var/run/docker.sock --network host --env-file /path/to/opencode-docker/.env opencode-sandbox'
-```
-
-**Windows (WSL) - add to `~/.bashrc`:**
-```bash
-alias opencode='docker run -it --rm -v "$(pwd):/workspace" -v /var/run/docker.sock:/var/run/docker.sock --network host --env-file /path/to/opencode-docker/.env opencode-sandbox'
-```
-
-### Using the Included run.sh Script
-
-The repository includes a `run.sh` script that handles building and running:
+The `run.sh` script handles building and running:
 
 ```bash
 ./run.sh [opencode arguments]
 ```
-
-This script will:
-1. Load variables from `.env`
-2. Check if the Docker image exists (skip build if it does)
-3. Run the container with appropriate mounts
 
 **Options:**
 - `--build` or `-B` - Force rebuild the Docker image even if it exists
 
 ```bash
 ./run.sh --build
-./run.sh -B
 ```
 
-#### Color Settings
+**What it does:**
+1. Loads variables from `.env`
+2. Builds the Docker image if it doesn't exist (or with `--build`)
+3. Runs the container with proper mounts and networking
+
+### Recommended Alias
+
+Create a shell alias to `run.sh`:
+
+```bash
+# Add to your shell config (~/.zshrc for Linux/macOS, ~/.bashrc for Linux/WSL)
+alias opencode-docker='/path/to/opencode-docker/run.sh'
+```
+
+#### Colour Settings
 
 | Variable | Description | Default |
 |----------|-------------|---------|
@@ -175,30 +157,7 @@ This script will:
 
 ## NO_COLOR Support
 
-All scripts respect the `NO_COLOR` environment variable (see [no-color.org](https://no-color.org)). Set this variable to disable colored output:
-
-```bash
-export NO_COLOR=1
-./run.sh
-```
-
-## Building Custom Images
-
-You can build custom Docker images with specific configurations using build arguments:
-
-```bash
-docker build \
-  --build-arg INCLUDE_INTELLIJ=true \
-  --build-arg ENABLE_CONTEXT7=true \
-  --build-arg ENABLE_SHOPIFY_DEV=true \
-  --build-arg ENABLE_DDG_SEARCH=true \
-  --build-arg THEME=dracula \
-  --build-arg OLLAMA_PROVIDER_NAME=my-ollama \
-  --build-arg OLLAMA_PROVIDER_PRETTY_NAME="My Ollama" \
-  --build-arg OLLAMA_HOST=http://my-server:11434 \
-  --build-arg OLLAMA_MODELS=model1,model2 \
-  -t my-opencode .
-```
+All scripts respect the `NO_COLOR` environment variable (see [no-color.org](https://no-color.org)). Set the `NO_COLOR` environemnt variable to disable coloured output.
 
 **Note:** API keys and other sensitive data should be set via environment variables at runtime (via `.env` file or `-e` flags), not as build arguments.
 
@@ -213,14 +172,6 @@ curl -fsSL https://opencode.ai/install | bash
 ```
 
 Or visit the documentation: https://opencode.ai/docs#install
-
-### Docker Permission Issues
-
-If you encounter permission errors with Docker, ensure your user is in the `docker` group:
-
-```bash
-sudo usermod -aG docker $USER
-```
 
 ### Volume Mount Issues
 
