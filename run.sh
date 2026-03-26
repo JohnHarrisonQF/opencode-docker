@@ -36,44 +36,25 @@ fi
 
 THEME="${THEME:-default}"
 ENABLE_INTELLIJ="${ENABLE_INTELLIJ:-true}"
-ENABLE_CONTEXT7="${ENABLE_CONTEXT7:-true}"
-ENABLE_SHOPIFY_DEV="${ENABLE_SHOPIFY_DEV:-true}"
 ENABLE_DDG_SEARCH="${ENABLE_DDG_SEARCH:-true}"
-ENABLE_FIGMA="${ENABLE_FIGMA:-true}"
-ENABLE_FIGMA_DESKTOP="${ENABLE_FIGMA_DESKTOP:-true}"
-ENABLE_SEQUENTIAL_THINKING="${ENABLE_SEQUENTIAL_THINKING:-true}"
 ENABLE_GSD="${ENABLE_GSD:-true}"
 
-BUILD_ARGS=(
-  --build-arg "ENABLE_INTELLIJ=$ENABLE_INTELLIJ"
-  --build-arg "ENABLE_CONTEXT7=$ENABLE_CONTEXT7"
-  --build-arg "ENABLE_SHOPIFY_DEV=$ENABLE_SHOPIFY_DEV"
-  --build-arg "ENABLE_DDG_SEARCH=$ENABLE_DDG_SEARCH"
-  --build-arg "ENABLE_FIGMA=$ENABLE_FIGMA"
-  --build-arg "ENABLE_FIGMA_DESKTOP=$ENABLE_FIGMA_DESKTOP"
-  --build-arg "ENABLE_SEQUENTIAL_THINKING=$ENABLE_SEQUENTIAL_THINKING"
-  --build-arg "ENABLE_GSD=$ENABLE_GSD"
-)
-
-if [ -n "$OLLAMA_PROVIDER_NAME" ]; then
-  BUILD_ARGS+=(--build-arg "OLLAMA_PROVIDER_NAME=$OLLAMA_PROVIDER_NAME")
-fi
-if [ -n "$OLLAMA_PROVIDER_PRETTY_NAME" ]; then
-  BUILD_ARGS+=(--build-arg "OLLAMA_PROVIDER_PRETTY_NAME=$OLLAMA_PROVIDER_PRETTY_NAME")
-fi
-if [ -n "$OLLAMA_HOST" ]; then
-  BUILD_ARGS+=(--build-arg "OLLAMA_HOST=$OLLAMA_HOST")
-fi
-if [ -n "$OLLAMA_MODELS" ]; then
-  BUILD_ARGS+=(--build-arg "OLLAMA_MODELS=$OLLAMA_MODELS")
-fi
-
-if [ -n "$THEME" ] && [ "$THEME" != "default" ]; then
-  BUILD_ARGS+=(--build-arg "THEME=$THEME")
-fi
+BUILD_ARGS=()
 
 if [ -n "$PHP_VERSION" ]; then
   BUILD_ARGS+=(--build-arg "PHP_VERSION=$PHP_VERSION")
+fi
+
+if [ "$ENABLE_DDG_SEARCH" = "true" ]; then
+  BUILD_ARGS+=(--build-arg "ENABLE_DDG_SEARCH=true")
+fi
+
+if [ "$ENABLE_GSD" = "true" ]; then
+  BUILD_ARGS+=(--build-arg "ENABLE_GSD=true")
+fi
+
+if [ "$ENABLE_DEVCONTAINERS" = "true" ]; then
+  BUILD_ARGS+=(--build-arg "ENABLE_DEVCONTAINERS=true")
 fi
 
 IMAGE_EXISTS=false
@@ -94,6 +75,11 @@ DOCKER_ARGS=(
   -v "$(pwd)":/workspace
   --add-host host.docker.internal:host-gateway
 )
+
+if [ "$ENABLE_INTELLIJ" = "true" ]; then
+  DOCKER_ARGS+=(--network host)
+  echo -e "${YELLOW}Network mode: host (required for IntelliJ MCP)${RESET}"
+fi
 
 configure_clipboard() {
   local os_type
