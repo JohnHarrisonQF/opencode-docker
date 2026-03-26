@@ -6,6 +6,8 @@ ARG ENABLE_SHOPIFY_DEV=true
 ARG ENABLE_DDG_SEARCH=true
 ARG ENABLE_FIGMA=true
 ARG ENABLE_FIGMA_DESKTOP=true
+ARG ENABLE_SEQUENTIAL_THINKING=true
+ARG ENABLE_GSD=true
 ARG THEME=default
 ARG OLLAMA_PROVIDER_NAME
 ARG OLLAMA_PROVIDER_PRETTY_NAME
@@ -23,7 +25,10 @@ RUN if [ -n "$PHP_VERSION" ]; then \
     fi && \
     apk add --no-cache $APK_PACKAGES
 
-RUN npm install -g @upstash/context7-mcp @shopify/dev-mcp @ai-sdk/openai-compatible gsd-opencode
+RUN npm install -g @upstash/context7-mcp @shopify/dev-mcp @ai-sdk/openai-compatible && \
+    if [ "$ENABLE_GSD" = "true" ]; then \
+        npm install -g gsd-opencode; \
+    fi
 
 RUN if [ "$ENABLE_CONTEXT7" = "true" ]; then \
         NPM_PACKAGES="$NPM_PACKAGES @upstash/context7-mcp"; \
@@ -82,6 +87,12 @@ RUN if [ "$ENABLE_INTELLIJ" = "true" ]; then \
         mv /tmp/opencode.json /root/.config/opencode/opencode.json; \
     fi
 
+RUN if [ "$ENABLE_SEQUENTIAL_THINKING" = "true" ]; then \
+        jq '.mcp["sequential-thinking"] = {"command":["npx","-y","@modelcontextprotocol/server-sequential-thinking"],"type":"local","enabled":true}' \
+            /root/.config/opencode/opencode.json > /tmp/opencode.json && \
+        mv /tmp/opencode.json /root/.config/opencode/opencode.json; \
+    fi
+
 RUN if [ "$THEME" = "dracula" ]; then \
         curl -fsSL https://raw.githubusercontent.com/dracula/opencode/main/dracula.json \
           -o /root/.config/opencode/themes/dracula.json && \
@@ -118,7 +129,9 @@ RUN if [ -n "$OLLAMA_PROVIDER_NAME" ] && [ -n "$OLLAMA_PROVIDER_PRETTY_NAME" ] &
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-RUN gsd-opencode install --global
+RUN if [ "$ENABLE_GSD" = "true" ]; then \
+        gsd-opencode install --global; \
+    fi
 
 WORKDIR /workspace
 

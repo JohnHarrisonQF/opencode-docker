@@ -41,6 +41,8 @@ ENABLE_SHOPIFY_DEV="${ENABLE_SHOPIFY_DEV:-true}"
 ENABLE_DDG_SEARCH="${ENABLE_DDG_SEARCH:-true}"
 ENABLE_FIGMA="${ENABLE_FIGMA:-true}"
 ENABLE_FIGMA_DESKTOP="${ENABLE_FIGMA_DESKTOP:-true}"
+ENABLE_SEQUENTIAL_THINKING="${ENABLE_SEQUENTIAL_THINKING:-true}"
+ENABLE_GSD="${ENABLE_GSD:-true}"
 
 BUILD_ARGS=(
   --build-arg "ENABLE_INTELLIJ=$ENABLE_INTELLIJ"
@@ -49,6 +51,8 @@ BUILD_ARGS=(
   --build-arg "ENABLE_DDG_SEARCH=$ENABLE_DDG_SEARCH"
   --build-arg "ENABLE_FIGMA=$ENABLE_FIGMA"
   --build-arg "ENABLE_FIGMA_DESKTOP=$ENABLE_FIGMA_DESKTOP"
+  --build-arg "ENABLE_SEQUENTIAL_THINKING=$ENABLE_SEQUENTIAL_THINKING"
+  --build-arg "ENABLE_GSD=$ENABLE_GSD"
 )
 
 if [ -n "$OLLAMA_PROVIDER_NAME" ]; then
@@ -66,6 +70,10 @@ fi
 
 if [ -n "$THEME" ] && [ "$THEME" != "default" ]; then
   BUILD_ARGS+=(--build-arg "THEME=$THEME")
+fi
+
+if [ -n "$PHP_VERSION" ]; then
+  BUILD_ARGS+=(--build-arg "PHP_VERSION=$PHP_VERSION")
 fi
 
 IMAGE_EXISTS=false
@@ -96,7 +104,7 @@ configure_clipboard() {
       if [ -n "$WAYLAND_DISPLAY" ] && [ -n "$XDG_RUNTIME_DIR" ]; then
         DOCKER_ARGS+=(-e "WAYLAND_DISPLAY=$WAYLAND_DISPLAY")
         DOCKER_ARGS+=(-e "XDG_RUNTIME_DIR=/tmp/xdg-runtime")
-        DOCKER_ARGS+=(-v "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/tmp/xdg-runtime/$WAYLAND_DISPLAY")
+        DOCKER_ARGS+=(-v "$XDG_RUNTIME_DIR:/tmp/xdg-runtime")
       elif [ -n "$DISPLAY" ]; then
         DOCKER_ARGS+=(-e "DISPLAY=$DISPLAY")
         if [ -d "/tmp/.X11-unix" ]; then
