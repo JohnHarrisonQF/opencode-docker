@@ -38,11 +38,12 @@ if ! command -v docker &> /dev/null; then
     error "Docker is required but not installed. Please install Docker first."
 fi
 
-INSTALL_DIR="${INSTALL_DIR:-$HOME/opencode-docker}"
-
-if [ -t 0 ]; then
-    read -p "Where would you like to install opencode-docker? [$INSTALL_DIR]: " INPUT_DIR
-    INSTALL_DIR="${INPUT_DIR:-$INSTALL_DIR}"
+DEFAULT_INSTALL_DIR="$HOME/opencode-docker"
+if [ -e /dev/tty ]; then
+    read -p "Where would you like to install opencode-docker? [$DEFAULT_INSTALL_DIR]: " INPUT_DIR < /dev/tty
+    INSTALL_DIR="${INPUT_DIR:-$DEFAULT_INSTALL_DIR}"
+else
+    INSTALL_DIR="$DEFAULT_INSTALL_DIR"
 fi
 
 INSTALL_DIR="${INSTALL_DIR/#\~/$HOME}"
