@@ -38,8 +38,13 @@ if ! command -v docker &> /dev/null; then
     error "Docker is required but not installed. Please install Docker first."
 fi
 
-read -p "Where would you like to install opencode-docker? [~/opencode-docker]: " INSTALL_DIR
 INSTALL_DIR="${INSTALL_DIR:-$HOME/opencode-docker}"
+
+if [ -t 0 ]; then
+    read -p "Where would you like to install opencode-docker? [$INSTALL_DIR]: " INPUT_DIR
+    INSTALL_DIR="${INPUT_DIR:-$INSTALL_DIR}"
+fi
+
 INSTALL_DIR="${INSTALL_DIR/#\~/$HOME}"
 
 if [ -d "$INSTALL_DIR" ]; then
@@ -61,9 +66,13 @@ else
 fi
 
 if ! command -v opencode &> /dev/null; then
-    echo ""
-    read -p "Opencode is not installed. Would you like to install it now? [Y/n]: " INSTALL_OPENCODE
-    INSTALL_OPENCODE="${INSTALL_OPENCODE:-Y}"
+    if [ -t 0 ]; then
+        echo ""
+        read -p "Opencode is not installed. Would you like to install it now? [Y/n]: " INSTALL_OPENCODE
+        INSTALL_OPENCODE="${INSTALL_OPENCODE:-Y}"
+    else
+        INSTALL_OPENCODE="Y"
+    fi
     
     if [[ "$INSTALL_OPENCODE" =~ ^[Yy]$ ]]; then
         info "Installing opencode..."
@@ -77,26 +86,15 @@ fi
 echo ""
 success "Installation complete!"
 echo ""
-echo "To run OpenCode, use the run.sh script:"
-echo "  cd $INSTALL_DIR && ./run.sh"
+echo "Add this alias to your ~/.zshrc or ~/.bashrc:"
+echo "  alias opencode-docker='$INSTALL_DIR/run.sh'"
 echo ""
-echo "Or create an alias (update path to .env file):"
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    echo "  Add to your ~/.zshrc or ~/.bash_profile:"
-    echo "    alias opencode-docker='$INSTALL_DIR/run.sh'"
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    echo "  Add to your ~/.bashrc:"
-    echo "    alias opencode-docker='$INSTALL_DIR/run.sh'"
-else
-    echo "  Run directly:"
-    echo "    $INSTALL_DIR/run.sh"
-fi
-
+echo "Then reload your shell and run from any project:"
+echo "  cd /path/to/your-project"
+echo "  opencode-docker"
 echo ""
-echo "Environment configuration:"
-echo "  .env file location: $INSTALL_DIR/.env"
-echo ""
-echo "  Please edit your .env file and set your environment variables:"
+echo "Configuration:"
+echo "  Edit $INSTALL_DIR/.env to set API keys and preferences"
 if [ -n "$EDITOR" ]; then
     echo "    $EDITOR $INSTALL_DIR/.env"
 else
