@@ -73,12 +73,12 @@ nano .env  # or use your preferred editor
 
 #### Ollama Settings
 
-| Variable                      | Description                                                             | Required                             |
-|-------------------------------|-------------------------------------------------------------------------|--------------------------------------|
-| `OLLAMA_PROVIDER_NAME`        | Provider identifier (e.g., "ollama")                                    | No (required if using custom Ollama) |
-| `OLLAMA_PROVIDER_PRETTY_NAME` | Display name (e.g., "Ollama")                                           | No (required if using custom Ollama) |
-| `OLLAMA_HOST`                 | Ollama server URL (e.g., "http://localhost:11434")                      | No (required if using custom Ollama) |
-| `OLLAMA_MODELS`               | Comma-separated list of models (first model gets `_launch: true`)       | No                                   |
+| Variable                      | Description                                                           | Required                             |
+|-------------------------------|-----------------------------------------------------------------------|--------------------------------------|
+| `OLLAMA_PROVIDER_NAME`        | Provider identifier (e.g., "ollama")                                  | No (required if using custom Ollama) |
+| `OLLAMA_PROVIDER_PRETTY_NAME` | Display name (e.g. "Ollama")                                          | No (required if using custom Ollama) |
+| `OLLAMA_HOST`                 | Ollama server URL (e.g. "http://localhost:11434")                     | No (required if using custom Ollama) |
+| `OLLAMA_MODELS`               | Comma-separated list of models (first model gets `_launch: true`)     | No                                   |
 | `OLLAMA_MODEL`                | Default model to use (currently defaults to `ollama-cloud/glm-5:cloud`) | No                                   |
 
 #### Git Setup
@@ -106,9 +106,9 @@ nano .env  # or use your preferred editor
 
 #### Colour Settings
 
-| Variable   | Description                     | Default |
-|------------|---------------------------------|---------|
-| `NO_COLOR` | Disable colored terminal output | `false` |
+| Variable   | Description                                                                | Default |
+|------------|----------------------------------------------------------------------------|---------|
+| `NO_COLOR` | Disable colored terminal output (see [no-color.org](https://no-color.org)) | `false` |
 
 ### Custom Themes
 
@@ -145,10 +145,6 @@ The current directory is mounted as `/workspace` inside the container. OpenCode 
 ```bash
 opencode-docker --build
 ```
-
-## NO_COLOR Support
-
-All scripts respect the `NO_COLOR` environment variable (see [no-color.org](https://no-color.org)). Set the `NO_COLOR` environment variable to disable coloured output.
 
 ## Troubleshooting
 
