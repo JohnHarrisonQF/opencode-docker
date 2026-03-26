@@ -8,7 +8,7 @@ This project is not affiliated with, endorsed by, or connected to the OpenCode t
 
 ## Prerequisites
 
-- Docker (required)
+- Docker or Podman (required)
 - Git (for installation)
 - OpenCode (optional – the installer can install it for you)
 
@@ -163,6 +163,22 @@ The current directory is mounted as `/workspace` inside the container. OpenCode 
 opencode-docker --build
 ```
 
+**Force Docker or Podman:**
+```bash
+opencode-docker --docker    # Use Docker explicitly
+opencode-docker --podman    # Use Podman explicitly
+```
+
+## Container Runtime
+
+The script auto-detects your container runtime:
+1. Checks for `docker` first
+2. Falls back to `podman` if docker isn't found
+
+podman is experimental, expect (more) issues
+
+You can override with `--docker` or `--podman` flags.
+
 ## Security Considerations
 
 **Network Isolation:**
@@ -213,7 +229,7 @@ These projects are always installed in the container:
 These are required on your host machine:
 
 - [Docker](https://www.docker.com/) or [Podman](https://podman.io/) - Container runtime
-- Docker Compose or podman-compose - Container orchestration
+- Docker Compose or podman-compose - Container orchestration (optional)
 
 ### Optional MCP Servers
 
