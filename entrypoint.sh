@@ -37,6 +37,20 @@ set_git_credentials() {
   fi
 }
 
+configure_mcp_servers() {
+  CONFIG_FILE="/root/.config/opencode/opencode.json"
+  
+  if [ -n "$CONTEXT7_API_KEY" ] && [ -f "$CONFIG_FILE" ]; then
+    if jq -e '.mcp.context7' "$CONFIG_FILE" > /dev/null 2>&1; then
+      jq --arg key "$CONTEXT7_API_KEY" \
+        '.mcp.context7.command = ["npx", "-y", "@upstash/context7-mcp", "--api-key", $key]' \
+        "$CONFIG_FILE" > /tmp/opencode.json && \
+      mv /tmp/opencode.json "$CONFIG_FILE"
+    fi
+  fi
+}
+
 set_git_credentials
 create_auth_json
+configure_mcp_servers
 exec opencode "$@"

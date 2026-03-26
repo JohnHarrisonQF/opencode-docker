@@ -1,13 +1,16 @@
 FROM ghcr.io/anomalyco/opencode:latest
 
-ARG INCLUDE_INTIJ=true
+ARG INCLUDE_INTELLIJ=true
+ARG ENABLE_CONTEXT7=true
+ARG ENABLE_SHOPIFY_DEV=true
+ARG ENABLE_DDG_SEARCH=true
 ARG THEME=default
 ARG OLLAMA_PROVIDER_NAME
 ARG OLLAMA_PROVIDER_PRETTY_NAME
 ARG OLLAMA_HOST
 ARG OLLAMA_MODELS
 
-RUN apk add --no-cache nodejs npm curl jq python3 py3-pip php composer
+RUN apk add --no-cache nodejs npm curl jq python3 py3-pip php composer git
 
 RUN npm install -g @upstash/context7-mcp @shopify/dev-mcp @ai-sdk/openai-compatible gsd-opencode
 
@@ -15,9 +18,27 @@ RUN pip install --break-system-packages uv
 
 RUN mkdir -p /root/.config/opencode/themes
 
-RUN echo '{"$schema":"https://opencode.ai/config.json","model":"ollama-cloud/glm-5:cloud","mcp":{"context7":{"command":["context7-mcp"],"type":"local","enabled":true},"shopify-dev-mcp":{"command":["shopify-dev-mcp"],"environment":{"OPT_OUT_INSTRUMENTATION":"true"},"type":"local","enabled":true},"ddg-search":{"command":["uvx","duckduckgo-mcp-server"],"environment":{"DDG_SAFE_SEARCH":"MODERATE","DDG_REGION":"gb-en"},"type":"local","enabled":true}},"theme":"default"}' > /root/.config/opencode/opencode.json
+RUN echo '{"$schema":"https://opencode.ai/config.json","model":"ollama-cloud/glm-5:cloud","mcp":{},"theme":"default"}' > /root/.config/opencode/opencode.json
 
-RUN if [ "$INCLUDE_INTIJ" = "true" ]; then \
+RUN if [ "$ENABLE_CONTEXT7" = "true" ]; then \
+        jq '.mcp.context7 = {"command":["context7-mcp"],"type":"local","enabled":true}' \
+            /root/.config/opencode/opencode.json > /tmp/opencode.json && \
+        mv /tmp/opencode.json /root/.config/opencode/opencode.json; \
+    fi
+
+RUN if [ "$ENABLE_SHOPIFY_DEV" = "true" ]; then \
+        jq '.mcp["shopify-dev-mcp"] = {"command":["shopify-dev-mcp"],"environment":{"OPT_OUT_INSTRUMENTATION":"true"},"type":"local","enabled":true}' \
+            /root/.config/opencode/opencode.json > /tmp/opencode.json && \
+        mv /tmp/opencode.json /root/.config/opencode/opencode.json; \
+    fi
+
+RUN if [ "$ENABLE_DDG_SEARCH" = "true" ]; then \
+        jq '.mcp["ddg-search"] = {"command":["uvx","duckduckgo-mcp-server"],"environment":{"DDG_SAFE_SEARCH":"MODERATE","DDG_REGION":"gb-en"},"type":"local","enabled":true}' \
+            /root/.config/opencode/opencode.json > /tmp/opencode.json && \
+        mv /tmp/opencode.json /root/.config/opencode/opencode.json; \
+    fi
+
+RUN if [ "$INCLUDE_INTELLIJ" = "true" ]; then \
         jq '.mcp.IntelliJ = {"type": "remote", "url": "http://localhost:64342/sse"} | .mcp = (.mcp | to_entries | sort_by(.key == "IntelliJ" | not) | from_entries)' \
           /root/.config/opencode/opencode.json > /tmp/opencode.json && \
         mv /tmp/opencode.json /root/.config/opencode/opencode.json; \

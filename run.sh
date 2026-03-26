@@ -1,6 +1,19 @@
 #!/bin/bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-IMAGE="opencode-sandbox"
+IMAGE="opencode-docker"
+FORCE_BUILD=false
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --build|-B)
+      FORCE_BUILD=true
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
 
 if [ -n "$NO_COLOR" ] || [ "$TERM" = "dumb" ]; then
     RED=""
@@ -22,16 +35,47 @@ if [ -f "$ENV_FILE" ]; then
 fi
 
 THEME="${THEME:-default}"
-INCLUDE_INTIJ="${INCLUDE_INTIJ:-true}"
+INCLUDE_INTELLIJ="${INCLUDE_INTELLIJ:-true}"
+ENABLE_CONTEXT7="${ENABLE_CONTEXT7:-true}"
+ENABLE_SHOPIFY_DEV="${ENABLE_SHOPIFY_DEV:-true}"
+ENABLE_DDG_SEARCH="${ENABLE_DDG_SEARCH:-true}"
 
-BUILD_ARGS="--build-arg INCLUDE_INTIJ=$INCLUDE_INTIJ"
-if [ -n "$THEME" ] && [ "$THEME" != "default" ]; then
-  BUILD_ARGS="$BUILD_ARGS --build-arg THEME=$THEME"
-  IMAGE="${IMAGE}-${THEME}"
+BUILD_ARGS=(
+  --build-arg "INCLUDE_INTELLIJ=$INCLUDE_INTELLIJ"
+  --build-arg "ENABLE_CONTEXT7=$ENABLE_CONTEXT7"
+  --build-arg "ENABLE_SHOPIFY_DEV=$ENABLE_SHOPIFY_DEV"
+  --build-arg "ENABLE_DDG_SEARCH=$ENABLE_DDG_SEARCH"
+)
+
+if [ -n "$OLLAMA_PROVIDER_NAME" ]; then
+  BUILD_ARGS+=(--build-arg "OLLAMA_PROVIDER_NAME=$OLLAMA_PROVIDER_NAME")
+fi
+if [ -n "$OLLAMA_PROVIDER_PRETTY_NAME" ]; then
+  BUILD_ARGS+=(--build-arg "OLLAMA_PROVIDER_PRETTY_NAME=$OLLAMA_PROVIDER_PRETTY_NAME")
+fi
+if [ -n "$OLLAMA_HOST" ]; then
+  BUILD_ARGS+=(--build-arg "OLLAMA_HOST=$OLLAMA_HOST")
+fi
+if [ -n "$OLLAMA_MODELS" ]; then
+  BUILD_ARGS+=(--build-arg "OLLAMA_MODELS=$OLLAMA_MODELS")
 fi
 
-echo -e "${GREEN}Building Docker image: $IMAGE${RESET}"
-docker build -f "$SCRIPT_DIR/Dockerfile" $BUILD_ARGS -t $IMAGE "$SCRIPT_DIR"
+if [ -n "$THEME" ] && [ "$THEME" != "default" ]; then
+  BUILD_ARGS+=(--build-arg "THEME=$THEME")
+fi
+
+IMAGE_EXISTS=false
+if docker image inspect "$IMAGE" > /dev/null 2>&1; then
+  IMAGE_EXISTS=true
+fi
+
+if [ "$FORCE_BUILD" = true ] || [ "$IMAGE_EXISTS" = false ]; then
+  echo -e "${GREEN}Building Docker image: $IMAGE${RESET}"
+  docker buildx build -f "$SCRIPT_DIR/Dockerfile" "${BUILD_ARGS[@]}" -t "$IMAGE" --load "$SCRIPT_DIR"
+else
+  echo -e "${GREEN}Using existing image: $IMAGE${RESET}"
+  echo -e "${YELLOW}Use --build or -B to force rebuild${RESET}"
+fi
 
 DOCKER_ARGS=(
   -it --rm
