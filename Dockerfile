@@ -14,16 +14,11 @@ ARG OLLAMA_MODELS
 ARG NPM_PACKAGES
 ARG PHP_VERSION
 ARG APK_PACKAGES="nodejs npm curl jq git"
-ARG REQUIRES_PYTHON=false
-
-RUN if [ -n "$ENABLE_DDG_SEARCH" ]; then \
-      REQUIRES_PYTHON=true; \
-    fi
 
 RUN if [ -n "$PHP_VERSION" ]; then \
         APK_PACKAGES="$APK_PACKAGES php${PHP_VERSION} php${PHP_VERSION}-dom php${PHP_VERSION}-xml php${PHP_VERSION}-xmlwriter php${PHP_VERSION}-tokenizer php${PHP_VERSION}-pdo php${PHP_VERSION}-pdo_mysql composer"; \
     fi && \
-    if [ "$REQUIRES_PYTHON" = "true" ]; then \
+    if [ -n "$ENABLE_DDG_SEARCH" ]; then \
         APK_PACKAGES="$APK_PACKAGES python3 py3-pip"; \
     fi && \
     apk add --no-cache $APK_PACKAGES
@@ -44,7 +39,7 @@ RUN if [ "$ENABLE_CONTEXT7" = "true" ]; then \
     fi
 
 RUN if [ -n "$ENABLE_DDG_SEARCH" ]; then \
-      pip install --break-system-packages uv \
+      pip install --break-system-packages uv; \
     fi
 
 RUN mkdir -p /root/.config/opencode/themes
@@ -76,13 +71,13 @@ RUN if [ "$ENABLE_FIGMA" = "true" ]; then \
     fi
 
 RUN if [ "$ENABLE_FIGMA_DESKTOP" = "true" ]; then \
-        jq '.mcp["figma-desktop"] = {"url": "http://127.0.0.1:3845/mcp","type":"remote","enabled":true}' \
+        jq '.mcp["figma-desktop"] = {"url": "http://host.docker.internal:3845/mcp","type":"remote","enabled":true}' \
             /root/.config/opencode/opencode.json > /tmp/opencode.json && \
         mv /tmp/opencode.json /root/.config/opencode/opencode.json; \
     fi
 
 RUN if [ "$ENABLE_INTELLIJ" = "true" ]; then \
-        jq '.mcp.IntelliJ = {"type": "remote", "url": "http://localhost:64342/sse"} | .mcp = (.mcp | to_entries | sort_by(.key == "IntelliJ" | not) | from_entries)' \
+        jq '.mcp.IntelliJ = {"type": "remote", "url": "http://host.docker.internal:64342/sse"} | .mcp = (.mcp | to_entries | sort_by(.key == "IntelliJ" | not) | from_entries)' \
           /root/.config/opencode/opencode.json > /tmp/opencode.json && \
         mv /tmp/opencode.json /root/.config/opencode/opencode.json; \
     fi

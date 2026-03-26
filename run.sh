@@ -84,9 +84,43 @@ fi
 DOCKER_ARGS=(
   -it --rm
   -v "$(pwd)":/workspace
-  -v /var/run/docker.sock:/var/run/docker.sock
-  --network host
+  --add-host host.docker.internal:host-gateway
 )
+
+configure_clipboard() {
+  local os_type
+  os_type="$(uname -s)"
+  
+  case "$os_type" in
+    Linux)
+      if [ -n "$WAYLAND_DISPLAY" ] && [ -n "$XDG_RUNTIME_DIR" ]; then
+        DOCKER_ARGS+=(-e "WAYLAND_DISPLAY=$WAYLAND_DISPLAY")
+        DOCKER_ARGS+=(-e "XDG_RUNTIME_DIR=/tmp/xdg-runtime")
+        DOCKER_ARGS+=(-v "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/tmp/xdg-runtime/$WAYLAND_DISPLAY")
+      elif [ -n "$DISPLAY" ]; then
+        DOCKER_ARGS+=(-e "DISPLAY=$DISPLAY")
+        if [ -d "/tmp/.X11-unix" ]; then
+          DOCKER_ARGS+=(-v "/tmp/.X11-unix:/tmp/.X11-unix")
+        fi
+      fi
+      ;;
+    Darwin)
+      if [ -n "$DISPLAY" ]; then
+        DOCKER_ARGS+=(-e "DISPLAY=$DISPLAY")
+        if [ -d "/tmp/.X11-unix" ]; then
+          DOCKER_ARGS+=(-v "/tmp/.X11-unix:/tmp/.X11-unix")
+        fi
+      fi
+      ;;
+    MINGW*|MSYS*|CYGWIN*)
+      if [ -n "$DISPLAY" ]; then
+        DOCKER_ARGS+=(-e "DISPLAY=$DISPLAY")
+      fi
+      ;;
+  esac
+}
+
+configure_clipboard
 
 if [ -f "$ENV_FILE" ]; then
   DOCKER_ARGS+=(--env-file "$ENV_FILE")
