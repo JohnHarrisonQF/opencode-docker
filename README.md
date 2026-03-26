@@ -1,6 +1,6 @@
 # OpenCode Docker
 
-A Docker-based installation wrapper for OpenCode, allowing you to run OpenCode in an isolated container environment.
+A hastily built Docker-based installation wrapper for OpenCode, allowing you to run OpenCode in an isolated container environment.
 
 ## Disclaimer
 
