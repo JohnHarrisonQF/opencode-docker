@@ -12,7 +12,7 @@ ARG APK_PACKAGES="nodejs npm curl jq git"
 ARG NPM_PACKAGES="@ai-sdk/openai-compatible"
 
 RUN if [ -n "$PHP_VERSION" ]; then \
-        APK_PACKAGES="$APK_PACKAGES php${PHP_VERSION} php${PHP_VERSION}-dom php${PHP_VERSION}-xml php${PHP_VERSION}-xmlwriter php${PHP_VERSION}-tokenizer php${PHP_VERSION}-pdo php${PHP_VERSION}-pdo_mysql composer"; \
+        APK_PACKAGES="$APK_PACKAGES php${PHP_VERSION} php${PHP_VERSION}-dom php${PHP_VERSION}-xml php${PHP_VERSION}-xmlwriter php${PHP_VERSION}-tokenizer php${PHP_VERSION}-session php${PHP_VERSION}-pdo php${PHP_VERSION}-pdo_mysql composer"; \
     fi && \
     if [ "$ENABLE_DDG_SEARCH" = "true" ]; then \
         APK_PACKAGES="$APK_PACKAGES python3 py3-pip"; \
