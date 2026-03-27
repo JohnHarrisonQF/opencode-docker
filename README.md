@@ -104,25 +104,25 @@ nano .env  # or use your preferred editor
 
 #### MCP Server Configuration
 
-| Variable                   | Description                                           | Default |
-|----------------------------|-------------------------------------------------------|---------|
-| `ENABLE_INTELLIJ`          | Enable IntelliJ MCP server                            | `false` |
-| `ENABLE_CONTEXT7`          | Enable Context7 MCP server                            | `false` |
-| `ENABLE_SHOPIFY_DEV`       | Enable Shopify Dev MCP server                         | `false` |
-| `ENABLE_DDG_SEARCH`        | Enable DuckDuckGo Search MCP server                   | `false` |
-| `ENABLE_FIGMA`             | Enable Figma MCP server                               | `false` |
-| `ENABLE_FIGMA_DESKTOP`     | Enable Figma Desktop MCP server                       | `false` |
-| `ENABLE_SEQUENTIAL_THINKING` | Enable Sequential Thinking MCP server              | `false` |
-| `ENABLE_GSD`               | Enable GSD (GSD-OpenCode) MCP server                  | `false` |
-| `CONTEXT7_API_KEY`         | Context7 API key for authenticated access             | (empty) |
-| `FIGMA_CLIENT_ID`          | Figma OAuth client ID (required if Figma enabled)     | (empty) |
-| `FIGMA_CLIENT_SECRET`      | Figma OAuth client secret (required if Figma enabled) | (empty) |
+| Variable                     | Description                                           | Default |
+|------------------------------|-------------------------------------------------------|---------|
+| `ENABLE_INTELLIJ`            | Enable IntelliJ MCP server                            | `false` |
+| `ENABLE_CONTEXT7`            | Enable Context7 MCP server                            | `false` |
+| `ENABLE_SHOPIFY_DEV`         | Enable Shopify Dev MCP server                         | `false` |
+| `ENABLE_DDG_SEARCH`          | Enable DuckDuckGo Search MCP server                   | `false` |
+| `ENABLE_FIGMA`               | Enable Figma MCP server                               | `false` |
+| `ENABLE_FIGMA_DESKTOP`       | Enable Figma Desktop MCP server                       | `false` |
+| `ENABLE_SEQUENTIAL_THINKING` | Enable Sequential Thinking MCP server                 | `false` |
+| `ENABLE_GSD`                 | Enable GSD (GSD-OpenCode) MCP server                  | `false` |
+| `CONTEXT7_API_KEY`           | Context7 API key for authenticated access             | (empty) |
+| `FIGMA_CLIENT_ID`            | Figma OAuth client ID (required if Figma enabled)     | (empty) |
+| `FIGMA_CLIENT_SECRET`        | Figma OAuth client secret (required if Figma enabled) | (empty) |
 
 #### Colour Settings
 
-| Variable   | Description                                                                | Default |
-|------------|----------------------------------------------------------------------------|---------|
-| `NO_COLOR` | Disable colored terminal output (see [no-color.org](https://no-color.org)) | `false` |
+| Variable   | Description                                                                 | Default |
+|------------|-----------------------------------------------------------------------------|---------|
+| `NO_COLOR` | Disable coloured terminal output (see [no-color.org](https://no-color.org)) | `false` |
 
 ### Custom Themes
 
@@ -222,14 +222,40 @@ This project is licensed under the MIT Licence - see the [LICENCE](LICENSE) file
 
 ## Attribution
 
-This project uses and depends on:
+### Core Dependencies
+
+These projects are always installed in the container:
+
 - [OpenCode](https://opencode.ai) - Base image (`ghcr.io/anomalyco/opencode:latest`)
-- [context7-mcp](https://www.npmjs.com/package/@upstash/context7-mcp) by Upstash
-- [shopify-dev-mcp](https://www.npmjs.com/package/@shopify/dev-mcp) by Shopify
 - [@ai-sdk/openai-compatible](https://www.npmjs.com/package/@ai-sdk/openai-compatible) by Vercel
-- [gsd-opencode](https://www.npmjs.com/package/gsd-opencode) by rokicool
-- [duckduckgo-mcp-server](https://github.com/nickclyde/duckduckgo-mcp-server) by nickclyde
-- [Dracula Theme](https://github.com/dracula/opencode) for OpenCode - MIT License
+
+### Runtime Dependencies
+
+These are required on your host machine:
+
+- [Docker](https://www.docker.com/) or [Podman](https://podman.io/) - Container runtime
+- Docker Compose or podman-compose - Container orchestration (optional)
+
+### Optional MCP Servers
+
+These are installed when enabled via environment variables:
+
+- [context7-mcp](https://www.npmjs.com/package/@upstash/context7-mcp) by Upstash - Enabled with `ENABLE_CONTEXT7=true`
+- [shopify-dev-mcp](https://www.npmjs.com/package/@shopify/dev-mcp) by Shopify - Enabled with `ENABLE_SHOPIFY_DEV=true`
+- [duckduckgo-mcp-server](https://github.com/nickclyde/duckduckgo-mcp-server) by nickclyde - Enabled with `ENABLE_DDG_SEARCH=true`
+- [gsd-opencode](https://www.npmjs.com/package/gsd-opencode) by rokicool - Enabled with `ENABLE_GSD=true`
+- [@modelcontextprotocol/server-sequential-thinking](https://www.npmjs.com/package/@modelcontextprotocol/server-sequential-thinking) - Enabled with `ENABLE_SEQUENTIAL_THINKING=true`
+
+### Optional Plugins
+
+These are enabled via environment variables:
+
+- [opencode-devcontainers](https://github.com/athal7/opencode-devcontainers) - Enabled with `ENABLE_DEVCONTAINERS=true`
+- [opencode-dynamic-context-pruning](https://github.com/Opencode-DCP/opencode-dynamic-context-pruning) - Enabled with `ENABLE_DCP=true`
+
+### Themes
+
+- [Dracula Theme](https://github.com/dracula/opencode) for OpenCode - MIT License. Enabled with `THEME=dracula`
 
 See respective package documentation for licence information.
 
