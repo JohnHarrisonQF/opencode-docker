@@ -125,9 +125,9 @@ nano .env  # or use your preferred editor
 
 #### Colour Settings
 
-| Variable   | Description                                                                | Default |
-|------------|----------------------------------------------------------------------------|---------|
-| `NO_COLOR` | Disable colored terminal output (see [no-color.org](https://no-color.org)) | `false` |
+| Variable   | Description                                                                 | Default |
+|------------|-----------------------------------------------------------------------------|---------|
+| `NO_COLOR` | Disable coloured terminal output (see [no-color.org](https://no-color.org)) | `false` |
 
 ### Custom Themes
 
