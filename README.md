@@ -4,7 +4,9 @@ A hastily built Docker-based installation wrapper for OpenCode, allowing you to 
 
 ## Disclaimer
 
-This project is not affiliated with, endorsed by, or connected to the OpenCode team. This is an independent community project that wraps OpenCode in a Docker container for convenience. For the official OpenCode project, visit [opencode.ai](https://opencode.ai).
+This project is in active development, expect breakages.
+
+> This project is not affiliated with, endorsed by, or connected to the OpenCode team. This is an independent community project that wraps OpenCode in a Docker container for convenience. For the official OpenCode project, visit [opencode.ai](https://opencode.ai).
 
 ## Prerequisites
 
