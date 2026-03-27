@@ -41,6 +41,33 @@ create_auth_json() {
   printf '}' >> "$AUTH_DIR/auth.json"
 }
 
+create_mcp_auth_json() {
+  if [ "$ENABLE_CLICKUP" = "true" ]; then
+    mkdir -p "$AUTH_DIR"
+    CLICKUP_CLIENT_ID="${CLICKUP_CLIENT_ID#\"}"; CLICKUP_CLIENT_ID="${CLICKUP_CLIENT_ID%\"}"
+    CLICKUP_CLIENT_ID_ISSUED_AT="${CLICKUP_CLIENT_ID_ISSUED_AT#\"}"; CLICKUP_CLIENT_ID_ISSUED_AT="${CLICKUP_CLIENT_ID_ISSUED_AT%\"}"
+    CLICKUP_ACCESS_TOKEN="${CLICKUP_ACCESS_TOKEN#\"}"; CLICKUP_ACCESS_TOKEN="${CLICKUP_ACCESS_TOKEN%\"}"
+    CLICKUP_EXPIRES_AT="${CLICKUP_EXPIRES_AT#\"}"; CLICKUP_EXPIRES_AT="${CLICKUP_EXPIRES_AT%\"}"
+    CLICKUP_SCOPE="${CLICKUP_SCOPE#\"}"; CLICKUP_SCOPE="${CLICKUP_SCOPE%\"}"
+    cat > "$AUTH_DIR/mcp-auth.json" << EOF
+{
+  "clickup": {
+    "clientInfo": {
+      "clientId": "${CLICKUP_CLIENT_ID}",
+      "clientIdIssuedAt": ${CLICKUP_CLIENT_ID_ISSUED_AT:-0}
+    },
+    "serverUrl": "https://mcp.clickup.com/mcp",
+    "tokens": {
+      "accessToken": "${CLICKUP_ACCESS_TOKEN}",
+      "expiresAt": ${CLICKUP_EXPIRES_AT:-0},
+      "scope": "${CLICKUP_SCOPE:-}"
+    }
+  }
+}
+EOF
+  fi
+}
+
 set_git_credentials() {
   if [ -n "$GIT_NAME" ]; then
     git config --global user.name "$GIT_NAME"
@@ -174,6 +201,7 @@ JSONEOF
 
 set_git_credentials
 create_auth_json
+create_mcp_auth_json
 create_config
 cd /workspace || exit
 exec opencode "$@"
