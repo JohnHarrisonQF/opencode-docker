@@ -2,6 +2,8 @@
 
 A hastily built Docker-based installation wrapper for OpenCode, allowing you to run OpenCode in an isolated container environment.
 
+Currently using local OpenCode to handle some auth tasks, this requirement should be dropped eventually.
+
 ## Disclaimer
 
 This project is in active development, expect breakages.
@@ -254,7 +256,7 @@ These are enabled via environment variables:
 
 ### Themes
 
-- [Dracula Theme](https://github.com/dracula/opencode) for OpenCode - MIT License. Enabled with `THEME=dracula`
+- [Dracula Theme](https://github.com/dracula/opencode) for OpenCode - MIT Licence. Enabled with `THEME=dracula`
 
 See respective package documentation for licence information.
 
