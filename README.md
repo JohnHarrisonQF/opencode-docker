@@ -110,6 +110,7 @@ nano .env  # or use your preferred editor
 | `ENABLE_CONTEXT7`            | Enable Context7 MCP server                            | `false` |
 | `ENABLE_SHOPIFY_DEV`         | Enable Shopify Dev MCP server                         | `false` |
 | `ENABLE_DDG_SEARCH`          | Enable DuckDuckGo Search MCP server                   | `false` |
+| `ENABLE_CLICKUP`             | Enable ClickUp MCP server                             | `false` |
 | `ENABLE_FIGMA`               | Enable Figma MCP server                               | `false` |
 | `ENABLE_FIGMA_DESKTOP`       | Enable Figma Desktop MCP server                       | `false` |
 | `ENABLE_SEQUENTIAL_THINKING` | Enable Sequential Thinking MCP server                 | `false` |
@@ -243,6 +244,7 @@ These are installed when enabled via environment variables:
 - [context7-mcp](https://www.npmjs.com/package/@upstash/context7-mcp) by Upstash - Enabled with `ENABLE_CONTEXT7=true`
 - [shopify-dev-mcp](https://www.npmjs.com/package/@shopify/dev-mcp) by Shopify - Enabled with `ENABLE_SHOPIFY_DEV=true`
 - [duckduckgo-mcp-server](https://github.com/nickclyde/duckduckgo-mcp-server) by nickclyde - Enabled with `ENABLE_DDG_SEARCH=true`
+- [ClickUp MCP](https://developer.clickup.com/docs/connect-an-ai-assistant-to-clickups-mcp-server-1) - Enabled with `ENABLE_CLICKUP=true`
 - [gsd-opencode](https://www.npmjs.com/package/gsd-opencode) by rokicool - Enabled with `ENABLE_GSD=true`
 - [@modelcontextprotocol/server-sequential-thinking](https://www.npmjs.com/package/@modelcontextprotocol/server-sequential-thinking) - Enabled with `ENABLE_SEQUENTIAL_THINKING=true`
 

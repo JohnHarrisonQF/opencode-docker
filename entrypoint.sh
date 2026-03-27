@@ -76,6 +76,12 @@ JSONEOF
     mv /tmp/opencode.json "$CONFIG_FILE"
   fi
   
+  if [ "$ENABLE_CLICKUP" = "true" ]; then
+    jq '.mcp["clickup"] = {"url":"https://mcp.clickup.com/mcp","type":"remote","enabled":true}' \
+      "$CONFIG_FILE" > /tmp/opencode.json && \
+    mv /tmp/opencode.json "$CONFIG_FILE"
+  fi
+  
   if [ "$ENABLE_DDG_SEARCH" = "true" ]; then
     jq '.mcp["ddg-search"] = {"command":["uvx","duckduckgo-mcp-server"],"environment":{"DDG_SAFE_SEARCH":"MODERATE","DDG_REGION":"gb-en"},"type":"local","enabled":true}' \
       "$CONFIG_FILE" > /tmp/opencode.json && \
