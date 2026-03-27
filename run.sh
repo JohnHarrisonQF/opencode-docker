@@ -15,16 +15,27 @@ fi
 
 detect_container_runtime() {
     if [ -n "$CONTAINER_RUNTIME" ]; then
-        COMPOSE_CMD="$CONTAINER_RUNTIME compose"
+        if [ "$CONTAINER_RUNTIME" = "podman" ]; then
+            if command -v podman-compose &> /dev/null; then
+                COMPOSE_CMD="podman-compose"
+            else
+                COMPOSE_CMD="podman compose"
+            fi
+        else
+            COMPOSE_CMD="docker compose"
+        fi
         return
     fi
     
-    if command -v docker &> /dev/null && docker compose version &> /dev/null; then
-        COMPOSE_CMD="docker compose"
-    elif command -v podman &> /dev/null && podman compose version &> /dev/null 2>&1; then
-        COMPOSE_CMD="podman compose"
-    elif command -v podman-compose &> /dev/null; then
+    if command -v podman-compose &> /dev/null; then
         COMPOSE_CMD="podman-compose"
+        CONTAINER_RUNTIME="podman"
+    elif command -v podman &> /dev/null && podman compose version &> /dev/null 2>&1 && podman compose ls &> /dev/null 2>&1; then
+        COMPOSE_CMD="podman compose"
+        CONTAINER_RUNTIME="podman"
+    elif command -v docker &> /dev/null && docker compose version &> /dev/null; then
+        COMPOSE_CMD="docker compose"
+        CONTAINER_RUNTIME="docker"
     else
         echo -e "${RED}ERROR: No container runtime found. Install Docker or Podman.${RESET}" >&2
         exit 1
@@ -87,6 +98,8 @@ if [ "$ENABLE_INTELLIJ" = "true" ] || [ "$ENABLE_FIGMA_DESKTOP" = "true" ]; then
     export NETWORK_MODE=host
     echo -e "${YELLOW}Network mode: host (required for IntelliJ/Figma Desktop MCP)${RESET}"
 fi
+
+export CONTAINER_RUNTIME
 
 if [ "$FORCE_BUILD" = true ]; then
     echo -e "${GREEN}Building image with $COMPOSE_CMD...${RESET}"

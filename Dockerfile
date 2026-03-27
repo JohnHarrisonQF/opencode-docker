@@ -1,9 +1,12 @@
 FROM ghcr.io/anomalyco/opencode:latest
 
 ARG PHP_VERSION
+ARG ENABLE_CONTEXT7=true
+ARG ENABLE_SHOPIFY_DEV=true
 ARG ENABLE_DDG_SEARCH=true
 ARG ENABLE_GSD=true
 ARG APK_PACKAGES="nodejs npm curl jq git"
+ARG NPM_PACKAGES="@ai-sdk/openai-compatible"
 
 RUN if [ -n "$PHP_VERSION" ]; then \
         APK_PACKAGES="$APK_PACKAGES php${PHP_VERSION} php${PHP_VERSION}-dom php${PHP_VERSION}-xml php${PHP_VERSION}-xmlwriter php${PHP_VERSION}-tokenizer php${PHP_VERSION}-pdo php${PHP_VERSION}-pdo_mysql composer"; \
@@ -13,15 +16,28 @@ RUN if [ -n "$PHP_VERSION" ]; then \
     fi && \
     apk add --no-cache $APK_PACKAGES
 
-RUN npm install -g @upstash/context7-mcp @shopify/dev-mcp @ai-sdk/openai-compatible
-
 RUN if [ "$ENABLE_DDG_SEARCH" = "true" ]; then \
         pip install --break-system-packages uv && \
-        npm install -g duckduckgo-mcp-server; \
+        uv pip install duckduckgo-mcp-server; \
+    fi
+
+RUN if [ "$ENABLE_CONTEXT7" = "true" ]; then \
+        NPM_PACKAGES="$NPM_PACKAGES @upstash/context7-mcp"; \
+    fi && \
+    if [ "$ENABLE_SHOPIFY_DEV" = "true" ]; then \
+        NPM_PACKAGES="$NPM_PACKAGES @shopify/dev-mcp"; \
+    fi && \
+    if [ "$ENABLE_DDG_SEARCH" = "true" ]; then \
+        NPM_PACKAGES="$NPM_PACKAGES duckduckgo-mcp-server"; \
+    fi && \
+    if [ "$ENABLE_GSD" = "true" ]; then \
+        NPM_PACKAGES="$NPM_PACKAGES gsd-opencode"; \
+    fi && \
+    if [ -n "$NPM_PACKAGES" ]; then \
+        npm install -g $NPM_PACKAGES; \
     fi
 
 RUN if [ "$ENABLE_GSD" = "true" ]; then \
-        npm install -g gsd-opencode && \
         gsd-opencode install --global; \
     fi
 

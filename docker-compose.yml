@@ -7,6 +7,7 @@ services:
         PHP_VERSION: ${PHP_VERSION:-}
         ENABLE_DDG_SEARCH: ${ENABLE_DDG_SEARCH:-true}
         ENABLE_GSD: ${ENABLE_GSD:-true}
+        ENABLE_DEVCONTAINERS: ${ENABLE_DEVCONTAINERS:-false}
     image: opencode-docker
     container_name: opencode-docker
     network_mode: ${NETWORK_MODE:-bridge}
@@ -29,7 +30,10 @@ services:
       - ENABLE_FIGMA_DESKTOP=${ENABLE_FIGMA_DESKTOP:-true}
       - ENABLE_SEQUENTIAL_THINKING=${ENABLE_SEQUENTIAL_THINKING:-true}
       - ENABLE_GSD=${ENABLE_GSD:-true}
+      - ENABLE_DEVCONTAINERS=${ENABLE_DEVCONTAINERS:-false}
+      - ENABLE_DCP=${ENABLE_DCP:-false}
       - THEME=${THEME:-default}
+      - CONTAINER_RUNTIME=${CONTAINER_RUNTIME:-docker}
     env_file:
       - .env
     working_dir: /workspace

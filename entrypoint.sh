@@ -9,6 +9,16 @@ if [ -n "$NO_COLOR" ]; then
   export TERM=dumb
 fi
 
+get_host_internal() {
+  if [ "$CONTAINER_RUNTIME" = "podman" ]; then
+    echo "host.containers.internal"
+  else
+    echo "host.docker.internal"
+  fi
+}
+
+HOST_INTERNAL=$(get_host_internal)
+
 create_auth_json() {
   mkdir -p "$AUTH_DIR"
   
@@ -45,7 +55,7 @@ create_config() {
   mkdir -p "$CONFIG_DIR/themes"
   
   cat > "$CONFIG_FILE" << 'JSONEOF'
-{"$schema":"https://opencode.ai/config.json","model":"ollama-cloud/glm-5:cloud","mcp":{},"theme":"default"}
+{"$schema":"https://opencode.ai/config.json","model":"ollama-cloud/glm-5:cloud","mcp":{},"theme":"default","plugin":[]}
 JSONEOF
   
   if [ "$ENABLE_CONTEXT7" = "true" ]; then
@@ -86,18 +96,18 @@ JSONEOF
   
   if [ "$ENABLE_FIGMA_DESKTOP" = "true" ]; then
     if [ -n "$FIGMA_CLIENT_ID" ] && [ -n "$FIGMA_CLIENT_SECRET" ]; then
-      jq '.mcp["figma-desktop"] = {"url":"http://host.docker.internal:3845/mcp","type":"remote","enabled":true,"oauth":{"client_id":$cid,"client_secret":$cs}}' \
-        --arg cid "$FIGMA_CLIENT_ID" --arg cs "$FIGMA_CLIENT_SECRET" "$CONFIG_FILE" > /tmp/opencode.json && \
+      jq '.mcp["figma-desktop"] = {"url":("http://" + $host + ":3845/mcp"),"type":"remote","enabled":true,"oauth":{"client_id":$cid,"client_secret":$cs}}' \
+        --arg cid "$FIGMA_CLIENT_ID" --arg cs "$FIGMA_CLIENT_SECRET" --arg host "$HOST_INTERNAL" "$CONFIG_FILE" > /tmp/opencode.json && \
       mv /tmp/opencode.json "$CONFIG_FILE"
     else
-      jq '.mcp["figma-desktop"] = {"url":"http://host.docker.internal:3845/mcp","type":"remote","enabled":true}' \
-        "$CONFIG_FILE" > /tmp/opencode.json && \
+      jq '.mcp["figma-desktop"] = {"url":("http://" + $host + ":3845/mcp"),"type":"remote","enabled":true}' \
+        --arg host "$HOST_INTERNAL" "$CONFIG_FILE" > /tmp/opencode.json && \
       mv /tmp/opencode.json "$CONFIG_FILE"
     fi
   fi
   
   if [ "$ENABLE_INTELLIJ" = "true" ]; then
-    jq '.mcp.IntelliJ = {"type":"remote","url":"http://host.docker.internal:64342/sse"} | .mcp = (.mcp | to_entries | sort_by(.key == "IntelliJ" | not) | from_entries)' \
+    jq '.mcp.IntelliJ = {"type":"remote","url":"http://localhost:64342/sse"} | .mcp = (.mcp | to_entries | sort_by(.key == "IntelliJ" | not) | from_entries)' \
       "$CONFIG_FILE" > /tmp/opencode.json && \
     mv /tmp/opencode.json "$CONFIG_FILE"
   fi
@@ -105,6 +115,16 @@ JSONEOF
   if [ "$ENABLE_SEQUENTIAL_THINKING" = "true" ]; then
     jq '.mcp["sequential-thinking"] = {"command":["npx","-y","@modelcontextprotocol/server-sequential-thinking"],"type":"local","enabled":true}' \
       "$CONFIG_FILE" > /tmp/opencode.json && \
+    mv /tmp/opencode.json "$CONFIG_FILE"
+  fi
+  
+  if [ "$ENABLE_DEVCONTAINERS" = "true" ]; then
+    jq '.plugin += ["opencode-devcontainers"]' "$CONFIG_FILE" > /tmp/opencode.json && \
+    mv /tmp/opencode.json "$CONFIG_FILE"
+  fi
+  
+  if [ "$ENABLE_DCP" = "true" ]; then
+    jq '.plugin += ["@tarquinen/opencode-dcp@latest"]' "$CONFIG_FILE" > /tmp/opencode.json && \
     mv /tmp/opencode.json "$CONFIG_FILE"
   fi
   
