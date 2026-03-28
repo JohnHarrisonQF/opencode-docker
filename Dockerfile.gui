@@ -1,0 +1,86 @@
+# Dockerfile for OpenCode Desktop GUI
+# Downloads and installs the native Linux .deb package
+
+FROM ubuntu:24.04
+
+# Install X11/Wayland libraries and dependencies for GUI
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libx11-6 \
+    libxext6 \
+    libxrender1 \
+    libxtst6 \
+    libxi6 \
+    libfreetype6 \
+    libfontconfig1 \
+    libgtk-3-0 \
+    libgtk-4-1 \
+    libnotify4 \
+    libnss3 \
+    libxss1 \
+    libasound2t64 \
+    libgbm1 \
+    libadwaita-1-0 \
+    gsettings-desktop-schemas \
+    libglib2.0-bin \
+    libdecor-0-0 \
+    libdecor-0-plugin-1-gtk \
+    adwaita-icon-theme-full \
+    mesa-vulkan-drivers \
+    libgl1-mesa-dri \
+    libwebkit2gtk-4.1-0 \
+    curl \
+    ca-certificates \
+    git \
+    jq \
+    dconf-cli \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Compile gsettings schemas for libadwaita/GTK
+RUN if [ -x /usr/bin/glib-compile-schemas ]; then \
+        glib-compile-schemas /usr/share/glib-2.0/schemas 2>/dev/null || true; \
+    fi
+
+# Create dconf directories for runtime configuration
+RUN mkdir -p /etc/dconf/profile && \
+    echo "user-db:user" > /etc/dconf/profile/user && \
+    echo "system-db:local" >> /etc/dconf/profile/user
+
+# Download and install Dracula GTK theme as Dracula-dark (for dark mode detection)
+RUN curl -fsSL https://github.com/dracula/gtk/archive/refs/heads/master.tar.gz -o /tmp/dracula-theme.tar.gz && \
+    tar -xzf /tmp/dracula-theme.tar.gz -C /tmp && \
+    mv /tmp/gtk-master /usr/share/themes/Dracula-dark && \
+    rm /tmp/dracula-theme.tar.gz
+
+# Download and install Colloid cursors (dark variant for Dracula)
+RUN curl -fsSL https://github.com/vinceliuice/Colloid-icon-theme/archive/refs/heads/main.tar.gz -o /tmp/colloid.tar.gz && \
+    tar -xzf /tmp/colloid.tar.gz -C /tmp && \
+    mkdir -p /usr/share/icons/Colloid-Dark && \
+    cp -r /tmp/Colloid-icon-theme-main/cursors/dist-dark/cursors /usr/share/icons/Colloid-Dark/ && \
+    printf '[Icon Theme]\nName=Colloid-Dark\nInherits=Colloid-Dark\n' > /usr/share/icons/Colloid-Dark/index.theme && \
+    rm -rf /tmp/colloid.tar.gz /tmp/Colloid-icon-theme-main
+
+# Download and install OpenCode Desktop
+ARG OPENCODE_VERSION=latest
+RUN if [ "$OPENCODE_VERSION" = "latest" ]; then \
+        curl -fsSL "https://opencode.ai/download/stable/linux-x64-deb" -o /tmp/opencode.deb; \
+    else \
+        curl -fsSL "https://opencode.ai/download/${OPENCODE_VERSION}/linux-x64-deb" -o /tmp/opencode.deb; \
+    fi && \
+    apt-get update && \
+    apt-get install -y /tmp/opencode.deb && \
+    rm /tmp/opencode.deb && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create non-root user to match host UID/GID
+# (Will be overridden at runtime with --user flag)
+RUN useradd -m -s /bin/bash opencode && \
+    chmod 777 /home/opencode
+
+WORKDIR /workspace
+
+# Entry point for GUI mode
+COPY entrypoint-gui.sh /entrypoint-gui.sh
+RUN chmod +x /entrypoint-gui.sh
+
+ENTRYPOINT ["/entrypoint-gui.sh"]
