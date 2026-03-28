@@ -119,6 +119,8 @@ fi
 CONTAINER_ARGS=(
   -it --rm
   -v "$(pwd)":/workspace
+  --user "$(id -u):$(id -g)"
+  -e "HOME=/home/opencode"
 )
 
 if [ "$CONTAINER_CMD" = "docker" ]; then
@@ -195,8 +197,6 @@ configure_gpu() {
 configure_gui_display() {
   local os_type
   os_type="$(uname -s)"
-  
-  CONTAINER_ARGS+=(--user "$(id -u):$(id -g)")
   
   case "$os_type" in
     Linux)
@@ -288,7 +288,6 @@ configure_gui_display() {
 configure_clipboard
 if [ "$GUI_MODE" = true ]; then
   configure_gui_display
-  CONTAINER_ARGS+=(-e "HOME=/home/opencode")
 fi
 
 if [ -f "$ENV_FILE" ]; then

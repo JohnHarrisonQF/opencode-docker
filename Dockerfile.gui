@@ -74,8 +74,9 @@ RUN if [ "$OPENCODE_VERSION" = "latest" ]; then \
 
 # Create non-root user to match host UID/GID
 # (Will be overridden at runtime with --user flag)
+# Sticky bit (1777) allows writes but prevents deletion of others' files
 RUN useradd -m -s /bin/bash opencode && \
-    chmod 777 /home/opencode
+    chmod 1777 /home/opencode
 
 WORKDIR /workspace
 
