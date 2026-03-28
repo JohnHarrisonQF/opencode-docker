@@ -46,6 +46,11 @@ RUN if [ "$ENABLE_GSD" = "true" ]; then \
         gsd-opencode install --global; \
     fi
 
+# Create non-root user for arbitrary UID/GID support
+# Sticky bit (1777) allows writes but prevents deletion of others' files
+RUN adduser -D -h /home/opencode opencode && \
+    chmod 1777 /home/opencode
+
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

@@ -1,8 +1,11 @@
 #!/bin/sh
 set -e
 
-AUTH_DIR="/root/.local/share/opencode"
-CONFIG_DIR="/root/.config/opencode"
+# Override HOME from host - use container's home directory
+export HOME="${HOME:-/root}"
+
+AUTH_DIR="$HOME/.local/share/opencode"
+CONFIG_DIR="$HOME/.config/opencode"
 CONFIG_FILE="$CONFIG_DIR/opencode.json"
 
 if [ -n "$NO_COLOR" ]; then

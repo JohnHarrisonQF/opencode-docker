@@ -174,6 +174,57 @@ opencode-docker --docker    # Use Docker explicitly
 opencode-docker --podman    # Use Podman explicitly
 ```
 
+### GUI Mode
+
+For users who prefer a graphical interface over the terminal UI, use the `--gui` flag:
+
+```bash
+opencode-docker --gui
+```
+
+This launches OpenCode Desktop in a container with X11/Wayland display forwarding.
+
+**Prerequisites for GUI mode:**
+
+- **Linux X11:** Ensure `DISPLAY` environment variable is set (usually automatic)
+- **Linux Wayland:** Ensure `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` are set
+- **macOS:** Install and run [XQuartz](https://www.xquartz.org/):
+  ```bash
+  brew install --cask xquartz
+  # Start XQuartz, then enable network connections in Preferences > Security
+  export DISPLAY=:0
+  ```
+- **Windows:**
+  - **Windows 11 + WSL2 (recommended):** WSLg is built-in. Run from WSL2:
+    ```bash
+    # In WSL2, DISPLAY and WAYLAND_DISPLAY are auto-set
+    opencode-docker --gui
+    ```
+  - **Windows 10 or Docker Desktop:** Install an X server:
+    ```bash
+    # Install VcXsrv or Xming on Windows
+    # Start with "Disable access control" enabled
+    export DISPLAY=host.docker.internal:0
+    opencode-docker --gui
+    ```
+
+**GUI vs TUI mode:**
+
+| Mode   | Command                | Interface     | Container User |
+|--------|------------------------|---------------|----------------|
+| TUI    | `opencode-docker`      | Terminal UI   | root           |
+| GUI    | `opencode-docker --gui`| Desktop app  | host UID/GID   |
+
+**Security note:** GUI mode mounts the X11 socket read-only and runs as your host user for proper file permissions.
+
+**Windows Docker Desktop setup (if WSLg unavailable):**
+
+1. Install [VcXsrv](https://sourceforge.net/projects/vcxsrv/) or [Xming](https://sourceforge.net/projects/xming/)
+2. Start VcXsrv/Xming with "Disable access control" checked
+3. In Docker Desktop: Settings > General > Enable "Expose daemon on tcp://localhost:2375"
+4. Set DISPLAY: `export DISPLAY=host.docker.internal:0`
+5. Run: `opencode-docker --gui`
+
 ## Container Runtime
 
 The script auto-detects your container runtime:
