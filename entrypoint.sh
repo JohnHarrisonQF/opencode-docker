@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+WORKSPACE_NAME="${WORKSPACE_NAME:-workspace}"
+
 # Ensure HOME is set; default to /root if not provided
 export HOME="${HOME:-/root}"
 
@@ -21,5 +23,5 @@ set_git_credentials
 create_auth_json
 create_mcp_auth_json
 create_config
-cd /workspace || exit
+cd "/$WORKSPACE_NAME" || exit
 exec opencode "$@"

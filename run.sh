@@ -110,12 +110,14 @@ else
   echo -e "${YELLOW}Use --build or -B to force rebuild${RESET}"
 fi
 
+WORKSPACE_NAME="$(basename "$(pwd)")"
 CONTAINER_ARGS=(
   -it --rm
-  -v "$(pwd)":/workspace
+  -v "$(pwd)":/"$WORKSPACE_NAME"
   --user "$(id -u):$(id -g)"
   -e "HOME=/home/opencode"
   -e "CONTAINER_RUNTIME=$CONTAINER_CMD"
+  -e "WORKSPACE_NAME=$WORKSPACE_NAME"
 )
 
 if [ "$CONTAINER_CMD" = "docker" ]; then

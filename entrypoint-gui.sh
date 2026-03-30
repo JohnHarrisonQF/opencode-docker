@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+WORKSPACE_NAME="${WORKSPACE_NAME:-workspace}"
+
 # GUI mode entrypoint
 # Runs OpenCode Desktop with X11/Wayland forwarding
 
@@ -25,8 +27,7 @@ create_auth_json
 create_mcp_auth_json
 create_config
 
-# Change to workspace directory
-cd /workspace || exit 1
+cd "/$WORKSPACE_NAME" || exit 1
 
 # Handle GTK/libadwaita theme for window decorations
 # libadwaita uses portal settings by default - must disable to respect GTK_THEME
@@ -47,18 +48,6 @@ setup_gtk4_theme() {
 
 # Convert -dark suffix to GTK4 variant syntax for proper dark mode
 case "$GTK_THEME" in
-  *-dark)
-    base_theme="${GTK_THEME%-dark}"
-    export GTK_THEME="${base_theme}:dark"
-    
-    # Configure gsettings to prefer dark (needed for libdecor/libadwaita)
-    mkdir -p "$HOME/.config/glib-2.0/settings"
-    export GSETTINGS_BACKEND=keyfile
-    gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' 2>/dev/null || true
-    
-    # Setup GTK4 theme files for libadwaita
-    setup_gtk4_theme "$base_theme"
-    ;;
   Dracula|Dracula-dark)
     # Setup Dracula theme for GTK4/libadwaita (installed as Dracula-dark)
     setup_gtk4_theme "Dracula-dark"
@@ -71,6 +60,18 @@ case "$GTK_THEME" in
     export XCURSOR_THEME="Colloid-Dark"
     mkdir -p "$HOME/.icons/default"
     printf '[Icon Theme]\nInherits=Colloid-Dark\n' > "$HOME/.icons/default/index.theme" 2>/dev/null || true
+    ;;
+  *-dark)
+    base_theme="${GTK_THEME%-dark}"
+    export GTK_THEME="${base_theme}:dark"
+    
+    # Configure gsettings to prefer dark (needed for libdecor/libadwaita)
+    mkdir -p "$HOME/.config/glib-2.0/settings"
+    export GSETTINGS_BACKEND=keyfile
+    gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' 2>/dev/null || true
+    
+    # Setup GTK4 theme files for libadwaita
+    setup_gtk4_theme "$base_theme"
     ;;
 esac
 

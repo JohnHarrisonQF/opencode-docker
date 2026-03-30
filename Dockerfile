@@ -55,6 +55,6 @@ COPY entrypoint-common.sh /entrypoint-common.sh
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-WORKDIR /workspace
+WORKDIR /
 
 ENTRYPOINT ["/entrypoint.sh"]

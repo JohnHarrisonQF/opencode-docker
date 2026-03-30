@@ -119,7 +119,7 @@ RUN if [ "$OPENCODE_VERSION" = "latest" ]; then \
 RUN useradd -m -s /bin/bash opencode && \
     chmod 1777 /home/opencode
 
-WORKDIR /workspace
+WORKDIR /
 
 # Entry point for GUI mode
 COPY entrypoint-common.sh /entrypoint-common.sh
