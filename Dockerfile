@@ -51,6 +51,7 @@ RUN if [ "$ENABLE_GSD" = "true" ]; then \
 RUN adduser -D -h /home/opencode opencode && \
     chmod 1777 /home/opencode
 
+COPY entrypoint-common.sh /entrypoint-common.sh
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

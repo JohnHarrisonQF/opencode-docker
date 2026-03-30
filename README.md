@@ -210,20 +210,19 @@ This launches OpenCode Desktop in a container with X11/Wayland display forwardin
 
 **GUI vs TUI mode:**
 
-| Mode   | Command                | Interface     | Container User |
-|--------|------------------------|---------------|----------------|
-| TUI    | `opencode-docker`      | Terminal UI   | root           |
-| GUI    | `opencode-docker --gui`| Desktop app  | host UID/GID   |
+| Mode | Command                 | Interface   | Container User |
+|------|-------------------------|-------------|----------------|
+| TUI  | `opencode-docker`       | Terminal UI | host UID/GID   |
+| GUI  | `opencode-docker --gui` | Desktop app | host UID/GID   |
 
-**Security note:** GUI mode mounts the X11 socket read-only and runs as your host user for proper file permissions.
+**Security note:** Both modes run as your host user for proper file permissions. GUI mode additionally mounts the X11 socket read-only for graphical output.
 
 **Windows Docker Desktop setup (if WSLg unavailable):**
 
 1. Install [VcXsrv](https://sourceforge.net/projects/vcxsrv/) or [Xming](https://sourceforge.net/projects/xming/)
 2. Start VcXsrv/Xming with "Disable access control" checked
-3. In Docker Desktop: Settings > General > Enable "Expose daemon on tcp://localhost:2375"
-4. Set DISPLAY: `export DISPLAY=host.docker.internal:0`
-5. Run: `opencode-docker --gui`
+3. Set DISPLAY: `export DISPLAY=host.docker.internal:0`
+4. Run: `opencode-docker --gui`
 
 ## Container Runtime
 

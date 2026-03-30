@@ -85,12 +85,6 @@ fi
   BUILD_ARGS+=(--build-arg "ENABLE_DEVCONTAINERS=true")
 fi
 
-if [ "$CONTAINER_CMD" = "podman" ]; then
-  CONTAINER_ARGS+=(-e "CONTAINER_RUNTIME=podman")
-else
-  CONTAINER_ARGS+=(-e "CONTAINER_RUNTIME=docker")
-fi
-
 IMAGE_EXISTS=false
 if $CONTAINER_CMD image inspect "$IMAGE" > /dev/null 2>&1; then
   IMAGE_EXISTS=true
@@ -121,6 +115,7 @@ CONTAINER_ARGS=(
   -v "$(pwd)":/workspace
   --user "$(id -u):$(id -g)"
   -e "HOME=/home/opencode"
+  -e "CONTAINER_RUNTIME=$CONTAINER_CMD"
 )
 
 if [ "$CONTAINER_CMD" = "docker" ]; then

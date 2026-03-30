@@ -3,6 +3,14 @@
 
 FROM ubuntu:24.04
 
+ARG ENABLE_CONTEXT7=true
+ARG ENABLE_SHOPIFY_DEV=true
+ARG ENABLE_DDG_SEARCH=true
+ARG ENABLE_GSD=true
+ARG ENABLE_DEVCONTAINERS=false
+ARG NPM_PACKAGES="@ai-sdk/openai-compatible"
+ARG OPENCODE_VERSION=latest
+
 # Install X11/Wayland libraries and dependencies for GUI
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libx11-6 \
@@ -36,6 +44,40 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Node.js 20+ (required for gsd-opencode regex syntax)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN if [ "$ENABLE_CONTEXT7" = "true" ]; then \
+        NPM_PACKAGES="$NPM_PACKAGES @upstash/context7-mcp"; \
+    fi && \
+    if [ "$ENABLE_SHOPIFY_DEV" = "true" ]; then \
+        NPM_PACKAGES="$NPM_PACKAGES @shopify/dev-mcp"; \
+    fi && \
+    if [ "$ENABLE_DDG_SEARCH" = "true" ]; then \
+        NPM_PACKAGES="$NPM_PACKAGES duckduckgo-mcp-server"; \
+    fi && \
+    if [ "$ENABLE_GSD" = "true" ]; then \
+        NPM_PACKAGES="$NPM_PACKAGES gsd-opencode"; \
+    fi && \
+    if [ "$ENABLE_DEVCONTAINERS" = "true" ]; then \
+        NPM_PACKAGES="$NPM_PACKAGES @devcontainers/cli"; \
+    fi && \
+    if [ -n "$NPM_PACKAGES" ]; then \
+        npm install -g $NPM_PACKAGES; \
+    fi
+
+RUN if [ "$ENABLE_DDG_SEARCH" = "true" ]; then \
+        apt-get update && apt-get install -y python3-pip && \
+        pip install --break-system-packages uv && \
+        rm -rf /var/lib/apt/lists/*; \
+    fi
+
+RUN if [ "$ENABLE_GSD" = "true" ]; then \
+        gsd-opencode install --global; \
+    fi
+
 # Compile gsettings schemas for libadwaita/GTK
 RUN if [ -x /usr/bin/glib-compile-schemas ]; then \
         glib-compile-schemas /usr/share/glib-2.0/schemas 2>/dev/null || true; \
@@ -61,7 +103,6 @@ RUN curl -fsSL https://github.com/vinceliuice/Colloid-icon-theme/archive/refs/he
     rm -rf /tmp/colloid.tar.gz /tmp/Colloid-icon-theme-main
 
 # Download and install OpenCode Desktop
-ARG OPENCODE_VERSION=latest
 RUN if [ "$OPENCODE_VERSION" = "latest" ]; then \
         curl -fsSL "https://opencode.ai/download/stable/linux-x64-deb" -o /tmp/opencode.deb; \
     else \
@@ -81,6 +122,7 @@ RUN useradd -m -s /bin/bash opencode && \
 WORKDIR /workspace
 
 # Entry point for GUI mode
+COPY entrypoint-common.sh /entrypoint-common.sh
 COPY entrypoint-gui.sh /entrypoint-gui.sh
 RUN chmod +x /entrypoint-gui.sh
 

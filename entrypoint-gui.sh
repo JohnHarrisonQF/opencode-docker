@@ -4,9 +4,9 @@ set -e
 # GUI mode entrypoint
 # Runs OpenCode Desktop with X11/Wayland forwarding
 
-# Override HOME from host - we need to use container's home directory
-# where config files and theme directories exist
-export HOME="/home/opencode"
+# Use container's home directory where config files and theme directories exist
+# Defaults to opencode user's home, but allows override via environment
+export HOME="${HOME:-/home/opencode}"
 
 # Create home directory structure for arbitrary UID
 mkdir -p "$HOME/.config/opencode/themes" "$HOME/.local/share/opencode" 2>/dev/null || true
@@ -15,33 +15,14 @@ AUTH_DIR="$HOME/.local/share/opencode"
 CONFIG_DIR="$HOME/.config/opencode"
 CONFIG_FILE="$CONFIG_DIR/opencode.json"
 
-# Setup git credentials if provided
-if [ -n "$GIT_NAME" ]; then
-    git config --global user.name "$GIT_NAME"
-fi
+# Source shared functions
+. /entrypoint-common.sh
 
-if [ -n "$GIT_EMAIL" ]; then
-    git config --global user.email "$GIT_EMAIL"
-fi
+HOST_INTERNAL=$(get_host_internal)
 
-create_config() {
-  mkdir -p "$CONFIG_DIR/themes"
-  
-  cat > "$CONFIG_FILE" << 'JSONEOF'
-{"$schema":"https://opencode.ai/config.json","model":"ollama-cloud/glm-5:cloud","mcp":{},"theme":"default","plugin":[]}
-JSONEOF
-  
-  if [ "$THEME" = "dracula" ]; then
-    curl -fsSL https://raw.githubusercontent.com/dracula/opencode/main/dracula.json \
-      -o "$CONFIG_DIR/themes/dracula.json" 2>/dev/null || true
-    jq '. + {"theme": "dracula"}' "$CONFIG_FILE" > /tmp/opencode.json && \
-    mv /tmp/opencode.json "$CONFIG_FILE"
-  elif [ -n "$THEME" ] && [ "$THEME" != "default" ]; then
-    jq --arg theme "$THEME" '.theme = $theme' "$CONFIG_FILE" > /tmp/opencode.json && \
-    mv /tmp/opencode.json "$CONFIG_FILE"
-  fi
-}
-
+set_git_credentials
+create_auth_json
+create_mcp_auth_json
 create_config
 
 # Change to workspace directory
