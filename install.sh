@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-REPO_URL="https://github.com/JohnHarrisonQF/opencode-docker"
+REPO_URL="https://github.com/PlasticlightS/opencode-docker"
 
 if [ -n "$NO_COLOR" ] || [ "$TERM" = "dumb" ]; then
     RED=""
@@ -40,7 +40,7 @@ fi
 
 DEFAULT_INSTALL_DIR="$HOME/opencode-docker"
 if [ -e /dev/tty ]; then
-    read -p "Where would you like to install opencode-docker? [$DEFAULT_INSTALL_DIR]: " INPUT_DIR < /dev/tty
+    read -r -p "Where would you like to install opencode-docker? [$DEFAULT_INSTALL_DIR]: " INPUT_DIR < /dev/tty
     INSTALL_DIR="${INPUT_DIR:-$DEFAULT_INSTALL_DIR}"
 else
     INSTALL_DIR="$DEFAULT_INSTALL_DIR"
@@ -69,7 +69,7 @@ fi
 if ! command -v opencode &> /dev/null; then
     if [ -e /dev/tty ]; then
         echo ""
-        read -p "Opencode is not installed. Would you like to install it now? [Y/n]: " INSTALL_OPENCODE < /dev/tty
+        read -r -p "Opencode is not installed. Would you like to install it now? [Y/n]: " INSTALL_OPENCODE < /dev/tty
         INSTALL_OPENCODE="${INSTALL_OPENCODE:-Y}"
     else
         INSTALL_OPENCODE="Y"
@@ -86,12 +86,60 @@ fi
 
 echo ""
 success "Installation complete!"
+
+# Alias management
+# Detect shell
+if [ -n "$ZSH_VERSION" ]; then
+    DEFAULT_CONFIG="$HOME/.zshrc"
+elif [ -n "$BASH_VERSION" ]; then
+    DEFAULT_CONFIG="$HOME/.bashrc"
+else
+    # Fallback to current shell name if versions are missing
+    CURRENT_SHELL=$(basename "$SHELL")
+    if [[ "$CURRENT_SHELL" == "zsh" ]]; then
+        DEFAULT_CONFIG="$HOME/.zshrc"
+    else
+        DEFAULT_CONFIG="$HOME/.bashrc"
+    fi
+fi
+
 echo ""
-echo "Add this alias to your ~/.zshrc or ~/.bashrc:"
-echo "  alias opencode-docker='$INSTALL_DIR/run.sh'"
+while true; do
+    if [ -e /dev/tty ]; then
+        read -r -p "Which file should the alias be added to? [$DEFAULT_CONFIG]: " INPUT_CONFIG < /dev/tty
+        CONFIG_FILE="${INPUT_CONFIG:-$DEFAULT_CONFIG}"
+    else
+        CONFIG_FILE="$DEFAULT_CONFIG"
+    fi
+
+    CONFIG_FILE="${CONFIG_FILE/#\~/$HOME}"
+
+    if [ -f "$CONFIG_FILE" ]; then
+        break
+    else
+        warn "Config file $CONFIG_FILE not found. Please provide a valid shell configuration file."
+
+
+        if [ ! -e /dev/tty ]; then
+            error "Config file $CONFIG_FILE not found and not in a TTY to prompt again."
+        fi
+    fi
+done
+
+ALIAS_LINE="alias opencode-docker='$INSTALL_DIR/run.sh'"
+
+if grep -Fq "alias opencode-docker=" "$CONFIG_FILE"; then
+    info "Alias 'opencode-docker' already exists in $CONFIG_FILE"
+else
+    echo "" >> "$CONFIG_FILE"
+    echo "# Opencode Docker" >> "$CONFIG_FILE"
+    echo "$ALIAS_LINE" >> "$CONFIG_FILE"
+    success "Added alias to $CONFIG_FILE"
+fi
+
 echo ""
 echo "Then reload your shell and run from any project:"
-echo "  source ~/.zshrc or ~/.bashrc"
+echo "  source $CONFIG_FILE"
 echo "  cd /path/to/your-project"
 echo "  opencode-docker"
 echo ""

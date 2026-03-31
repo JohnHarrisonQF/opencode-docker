@@ -23,21 +23,14 @@ This project is in active development, expect breakages.
 Run the installation script:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/JohnHarrisonQF/opencode-docker/main/install.sh | bash
-```
-
-After installation, add an alias to your shell config:
-
-```bash
-# Add to ~/.zshrc or ~/.bashrc
-alias opencode-docker='/path/to/opencode-docker/run.sh'
+curl -fsSL https://raw.githubusercontent.com/PlasticlightS/opencode-docker/main/install.sh | bash
 ```
 
 ### Manual Installation
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/JohnHarrisonQF/opencode-docker.git
+   git clone https://github.com/PlasticlightS/opencode-docker.git
    ```
 
 2. Copy the example environment file:
@@ -49,12 +42,6 @@ alias opencode-docker='/path/to/opencode-docker/run.sh'
 3. Edit the `.env` file with your configuration:
    ```bash
    nano .env
-   ```
-
-4. Create an alias in your shell config:
-   ```bash
-   # Add to ~/.zshrc or ~/.bashrc
-   alias opencode-docker='/path/to/opencode-docker/run.sh'
    ```
 
 ## Configuration
@@ -138,20 +125,6 @@ If `THEME` is set to a value that is not one of the built-in OpenCode themes or 
 
 ## Usage
 
-### Setup
-
-Create a shell alias pointing to `run.sh`:
-
-```bash
-# Add to ~/.zshrc or ~/.bashrc
-alias opencode-docker='/path/to/opencode-docker/run.sh'
-```
-
-Reload your shell config:
-```bash
-source ~/.zshrc  # or source ~/.bashrc
-```
-
 ### Running
 
 Navigate to any project folder and run:
@@ -173,6 +146,56 @@ opencode-docker --build
 opencode-docker --docker    # Use Docker explicitly
 opencode-docker --podman    # Use Podman explicitly
 ```
+
+### GUI Mode
+
+For users who prefer a graphical interface over the terminal UI, use the `--gui` flag:
+
+```bash
+opencode-docker --gui
+```
+
+This launches OpenCode Desktop in a container with X11/Wayland display forwarding.
+
+**Prerequisites for GUI mode:**
+
+- **Linux X11:** Ensure `DISPLAY` environment variable is set (usually automatic)
+- **Linux Wayland:** Ensure `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` are set
+- **macOS:** Install and run [XQuartz](https://www.xquartz.org/):
+  ```bash
+  brew install --cask xquartz
+  # Start XQuartz, then enable network connections in Preferences > Security
+  export DISPLAY=:0
+  ```
+- **Windows:**
+  - **Windows 11 + WSL2 (recommended):** WSLg is built-in. Run from WSL2:
+    ```bash
+    # In WSL2, DISPLAY and WAYLAND_DISPLAY are auto-set
+    opencode-docker --gui
+    ```
+  - **Windows 10 or Docker Desktop:** Install an X server:
+    ```bash
+    # Install VcXsrv or Xming on Windows
+    # Start with "Disable access control" enabled
+    export DISPLAY=host.docker.internal:0
+    opencode-docker --gui
+    ```
+
+**GUI vs TUI mode:**
+
+| Mode | Command                 | Interface   | Container User |
+|------|-------------------------|-------------|----------------|
+| TUI  | `opencode-docker`       | Terminal UI | host UID/GID   |
+| GUI  | `opencode-docker --gui` | Desktop app | host UID/GID   |
+
+**Security note:** Both modes run as your host user for proper file permissions. GUI mode additionally mounts the X11 socket read-only for graphical output.
+
+**Windows Docker Desktop setup (if WSLg unavailable):**
+
+1. Install [VcXsrv](https://sourceforge.net/projects/vcxsrv/) or [Xming](https://sourceforge.net/projects/xming/)
+2. Start VcXsrv/Xming with "Disable access control" checked
+3. Set DISPLAY: `export DISPLAY=host.docker.internal:0`
+4. Run: `opencode-docker --gui`
 
 ## Container Runtime
 
