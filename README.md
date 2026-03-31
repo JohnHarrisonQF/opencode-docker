@@ -23,7 +23,7 @@ This project is in active development, expect breakages.
 Run the installation script:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/JohnHarrisonQF/opencode-docker/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/PlasticlightS/opencode-docker/main/install.sh | bash
 ```
 
 After installation, add an alias to your shell config:
@@ -37,7 +37,7 @@ alias opencode-docker='/path/to/opencode-docker/run.sh'
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/JohnHarrisonQF/opencode-docker.git
+   git clone https://github.com/PlasticlightS/opencode-docker.git
    ```
 
 2. Copy the example environment file:
