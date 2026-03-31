@@ -88,19 +88,12 @@ echo ""
 success "Installation complete!"
 
 # Alias management
-# Detect shell
-if [ -n "$ZSH_VERSION" ]; then
+# Detect shell - use $SHELL since the script runs with bash regardless
+CURRENT_SHELL=$(basename "$SHELL")
+if [ "$CURRENT_SHELL" = "zsh" ]; then
     DEFAULT_CONFIG="$HOME/.zshrc"
-elif [ -n "$BASH_VERSION" ]; then
-    DEFAULT_CONFIG="$HOME/.bashrc"
 else
-    # Fallback to current shell name if versions are missing
-    CURRENT_SHELL=$(basename "$SHELL")
-    if [[ "$CURRENT_SHELL" == "zsh" ]]; then
-        DEFAULT_CONFIG="$HOME/.zshrc"
-    else
-        DEFAULT_CONFIG="$HOME/.bashrc"
-    fi
+    DEFAULT_CONFIG="$HOME/.bashrc"
 fi
 
 echo ""
@@ -131,7 +124,9 @@ ALIAS_LINE="alias opencode-docker='$INSTALL_DIR/run.sh'"
 if grep -Fq "alias opencode-docker=" "$CONFIG_FILE"; then
     info "Alias 'opencode-docker' already exists in $CONFIG_FILE"
 else
-    echo "" >> "$CONFIG_FILE"
+    if [ -s "$CONFIG_FILE" ]; then
+        echo "" >> "$CONFIG_FILE"
+    fi
     echo "# Opencode Docker" >> "$CONFIG_FILE"
     echo "$ALIAS_LINE" >> "$CONFIG_FILE"
     success "Added alias to $CONFIG_FILE"
