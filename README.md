@@ -26,13 +26,6 @@ Run the installation script:
 curl -fsSL https://raw.githubusercontent.com/PlasticlightS/opencode-docker/main/install.sh | bash
 ```
 
-After installation, add an alias to your shell config:
-
-```bash
-# Add to ~/.zshrc or ~/.bashrc
-alias opencode-docker='/path/to/opencode-docker/run.sh'
-```
-
 ### Manual Installation
 
 1. Clone the repository:
@@ -49,12 +42,6 @@ alias opencode-docker='/path/to/opencode-docker/run.sh'
 3. Edit the `.env` file with your configuration:
    ```bash
    nano .env
-   ```
-
-4. Create an alias in your shell config:
-   ```bash
-   # Add to ~/.zshrc or ~/.bashrc
-   alias opencode-docker='/path/to/opencode-docker/run.sh'
    ```
 
 ## Configuration
@@ -137,20 +124,6 @@ nano .env  # or use your preferred editor
 If `THEME` is set to a value that is not one of the built-in OpenCode themes or "dracula" you will need to provide the cutom theme.
 
 ## Usage
-
-### Setup
-
-Create a shell alias pointing to `run.sh`:
-
-```bash
-# Add to ~/.zshrc or ~/.bashrc
-alias opencode-docker='/path/to/opencode-docker/run.sh'
-```
-
-Reload your shell config:
-```bash
-source ~/.zshrc  # or source ~/.bashrc
-```
 
 ### Running
 
